@@ -27,10 +27,7 @@ class App:
             self.mario.posY -= 4
             self.mario.mY += 4
 
-            if self.mario.mX != 0:
-                self.mario.posX += self.mario.mX
-                self.mario.mX = 0
-
+            # Mario falls after reaching peak
             if self.mario.mY == 0:
                 self.mario.mY = 24
 
