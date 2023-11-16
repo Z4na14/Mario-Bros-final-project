@@ -50,7 +50,7 @@ class App:
                 self.mario.posX = -5
 
         # Exec the functions for the movement
-        if pyxel.btn(pyxel.KEY_W):
+        if pyxel.btnp(pyxel.KEY_W):
             self.mario.movement("up")
 
         elif pyxel.btn(pyxel.KEY_A):
