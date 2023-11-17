@@ -1,7 +1,10 @@
 import pyxel
+import levels
+import characters
+
 
 class App:
-    def __init__(self, dimx, dimy, marioClass):
+    def __init__(self, dimx, dimy, mario):
         """
         :param dimx: Dimensions of the window (x)
         :param dimy: Dimensions of the window (y)
@@ -13,7 +16,8 @@ class App:
         self.dimX = dimx
         self.dimY = dimy
 
-        self.mario = marioClass
+        self.mario = mario
+
         pyxel.init(dimx, dimy)
         pyxel.run(self.update, self.draw)
 
@@ -61,35 +65,4 @@ class App:
         pyxel.rect(self.mario.posX, self.mario.posY, 5, 10, 11)
 
 
-class Mario:
-    def __init__(self, collideX, collideY):
-        """
-        :param collideX:
-        :param collideY:
-        I would leave the colliders, but they are going to be fixed
-        to Mario
-        TO DO: remove colliders and make them a constant and place
-        class in another file.
-        """
-        self.collideX = collideX
-        self.collideY = collideY
-        self.posX = 50
-        self.posY = 50
-        self.mY = 0
-        self.mX = 0
-
-    def movement(self, command):
-        if command == 'up':
-            if self.mY == 0:
-                self.mY = -24
-
-        elif command == 'left':
-            if self.mX == 0:
-                self.mX -= 2
-
-        elif command == 'right':
-            if self.mX == 0:
-                self.mX += 2
-
-
-App(160, 120, Mario(10, 10))
+App(160, 120, characters.Mario(10, 10))
