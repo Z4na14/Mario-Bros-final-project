@@ -14,11 +14,12 @@ class Mario:
         self.posY = 50
         self.mY = 0
         self.mX = 0
+        self.isFalling = False
 
     def movement(self, command):
         if command == 'up':
             if self.mY == 0:
-                self.mY = -24
+                self.mY = -30
 
         elif command == 'left':
             if self.mX == 0:

@@ -21,9 +21,6 @@ class App:
 
         self.currlv = 0
         self.currplatforms = self.screens[self.currlv].platforms
-        print(self.currplatforms[0].positionX, self.currplatforms[0].positionY,
-              self.currplatforms[0].width, self.currplatforms[0].height)
-        print(pyxel.colors.to_list())
 
         pyxel.init(dimx, dimy)
         pyxel.run(self.update, self.draw)
@@ -35,22 +32,39 @@ class App:
 
         # Check if the position of the character must be higher
         if self.mario.mY < 0:
-            self.mario.posY -= 4
-            self.mario.mY += 4
+
+            for i in range(len(self.currplatforms)):
+                if self.currplatforms[i].positionY + self.currplatforms[i].height >\
+                   self.mario.posY > self.currplatforms[i].positionY + self.currplatforms[i].height + 5\
+                   and self.mario.isFalling == False:
+
+                    if self.currplatforms[i].positionX < self.mario.posX <\
+                       self.currplatforms[i].positionX + self.currplatforms[i].width:
+                        self.mario.posY = self.currplatforms[i].positoinY + self.currplatforms[i].height
+                        self.mario.mY = 0
+
+                else:
+                    self.mario.posY -= 5
+                    self.mario.mY += 5
 
             # Mario falls after reaching peak
             if self.mario.mY == 0:
-                self.mario.mY = 24
+                self.mario.isFalling = True
 
-        elif self.mario.mY > 0:
-            self.mario.posY += 4
-            self.mario.mY -= 4
+            """
+            Faltan cosas por hacer:é
+            Aqui va a ir el chequeo de que siga cayendo
+            y no esté en contacto con ninguna plataforma
+            """
+        elif self.mario.mY == True:
+            self.mario.posY += 5
 
         # Check for horizontal movement
         if self.mario.mX != 0:
             self.mario.posX += self.mario.mX
             self.mario.mX = 0
 
+            # Check if character leaves screen
             if self.mario.posX < -10:
                 self.mario.posX = self.dimX + 5
 
@@ -77,7 +91,8 @@ class App:
 
 screen1 = levels.Screen(1, [levels.Platform(0, 20, 30, 5),
                             levels.Platform(30, 40, 30, 5),
-                            levels.Platform(90, 60, 30, 5)],
+                            levels.Platform(90, 60, 30, 5),
+                            levels.Platform(0, 115, 160, 5)],
                         [[0, 10], [150, 10]])
 
 App(160, 120, characters.Mario(10, 10), [screen1])

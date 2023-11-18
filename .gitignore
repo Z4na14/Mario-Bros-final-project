@@ -8,3 +8,4 @@ lib64
 Scripts/
 Include/
 site-packages/
+src/__pycache__
