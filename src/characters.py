@@ -18,7 +18,7 @@ class Mario:
 
     def movement(self, command):
         if command == 'up':
-            if self.mY == 0:
+            if self.mY == 0 and self.isFalling == False:
                 self.mY = -30
 
         elif command == 'left':

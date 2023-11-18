@@ -32,32 +32,63 @@ class App:
 
         # Check if the position of the character must be higher
         if self.mario.mY < 0:
-
+            """
+            Checking for a collide over mario
+            First do collide under mario
+            
             for i in range(len(self.currplatforms)):
-                if self.currplatforms[i].positionY + self.currplatforms[i].height >\
-                   self.mario.posY > self.currplatforms[i].positionY + self.currplatforms[i].height + 5\
-                   and self.mario.isFalling == False:
+                if ((self.currplatforms[i].positionY + self.currplatforms[i].height) > \
+                        self.mario.posY > (self.currplatforms[i].positionY + self.currplatforms[i].height + 7)) \
+                        and self.mario.isFalling == False:
 
-                    if self.currplatforms[i].positionX < self.mario.posX <\
-                       self.currplatforms[i].positionX + self.currplatforms[i].width:
-                        self.mario.posY = self.currplatforms[i].positoinY + self.currplatforms[i].height
+                    if self.currplatforms[i].positionX < self.mario.posX < \
+                            (self.currplatforms[i].positionX + self.currplatforms[i].width):
+                        self.mario.posY = self.currplatforms[i].positionY + self.currplatforms[i].height
                         self.mario.mY = 0
-
+                        self.mario.isFalling == True
                 else:
-                    self.mario.posY -= 5
-                    self.mario.mY += 5
+            """
+            self.mario.posY -= 3
+            self.mario.mY += 3
+
 
             # Mario falls after reaching peak
             if self.mario.mY == 0:
                 self.mario.isFalling = True
 
+        elif self.mario.isFalling:
             """
-            Faltan cosas por hacer:é
-            Aqui va a ir el chequeo de que siga cayendo
-            y no esté en contacto con ninguna plataforma
+            for i in range(len(self.currplatforms)):
+                print(self.currplatforms[i].positionY, self.mario.posY + self.mario.mY)
+                if ((self.currplatforms[i].positionY - 5) >= (self.mario.posY + self.mario.mY) >= self.currplatforms[i].positionY)\
+                        and self.mario.isFalling == True:
+
+                    print("PARALELO")
+                    if self.currplatforms[i].positionX <= self.mario.posX <= \
+                            (self.currplatforms[i].positionX + self.currplatforms[i].width):
+                        self.mario.posY = self.currplatforms[i].positionY
+                        self.mario.isFalling == False
+
+                        print("ENCIMA")
+
+                else:
+                    self.mario.posY += 0.5
             """
-        elif self.mario.mY == True:
-            self.mario.posY += 5
+
+
+
+
+            # TEMPORAL CODE TO CHECK DEFINED COLLISION
+            if 110 < (self.mario.posY + self.mario.mY) < 115 and self.mario.isFalling:
+                self.mario.posY = 115 - self.mario.mY
+                self.mario.isFalling == False
+
+            else:
+                print(self.mario.posY+self.mario.mY)
+                self.mario.posY += 2
+
+
+
 
         # Check for horizontal movement
         if self.mario.mX != 0:
