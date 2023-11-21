@@ -53,45 +53,40 @@ class App:
 
 
             # Mario falls after reaching peak
-            if self.mario.mY >= 0:
+            if self.mario.mY == 0:
                 self.mario.isFalling = True
 
-        elif self.mario.isFalling == False:
-            print("\n")
-
-        elif self.mario.isFalling == True:
-            #print(self.mario.isFalling)
-
+        elif self.mario.isFalling:
+            """
             for i in range(len(self.currplatforms)):
                 print(self.currplatforms[i].positionY, self.mario.posY + self.mario.mY)
-                if ((self.currplatforms[i].positionY - 10) <= (self.mario.posY + self.mario.mY) <= self.currplatforms[i].positionY - 5)\
+                if ((self.currplatforms[i].positionY - 5) >= (self.mario.posY + self.mario.mY) >= self.currplatforms[i].positionY)\
                         and self.mario.isFalling == True:
 
                     print("PARALELO")
                     if self.currplatforms[i].positionX <= self.mario.posX <= \
                             (self.currplatforms[i].positionX + self.currplatforms[i].width):
-                        self.mario.posY = self.currplatforms[i].positionY-11
-                        self.mario.isFalling = False
+                        self.mario.posY = self.currplatforms[i].positionY
+                        self.mario.isFalling == False
 
                         print("ENCIMA")
 
                 else:
                     self.mario.posY += 0.5
-
-
-
-
             """
+
+
+
+
             # TEMPORAL CODE TO CHECK DEFINED COLLISION
-            if (105 <= (self.mario.posY + self.mario.mY) <= 110) and self.mario.isFalling:
-                print("hola")
-                self.mario.isFalling = False
-                self.mario.posY = 105
+            if 110 < (self.mario.posY + self.mario.mY) < 115 and self.mario.isFalling:
+                self.mario.posY = 115 - self.mario.mY
+                self.mario.isFalling == False
 
             else:
                 print(self.mario.posY+self.mario.mY)
                 self.mario.posY += 2
-            """
+
 
 
 
