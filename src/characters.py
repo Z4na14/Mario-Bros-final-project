@@ -5,8 +5,6 @@ class Mario:
         :param collideY:
         I would leave the colliders, but they are going to be fixed
         to Mario
-        TO DO: remove colliders and make them a constant and place
-        class in another file.
         """
         self.collideX = collideX
         self.collideY = collideY
