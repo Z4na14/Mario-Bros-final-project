@@ -9,7 +9,7 @@ class Platform:
 """
 
 class Screen:
-    def __init__(self, lv: int, platforms : list, pipes : list):
+    def __init__(self, lv: int, platforms: list, pipes : list):
         self.lv = lv
         self.platforms = platforms
         self.pipes = pipes

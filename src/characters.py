@@ -29,3 +29,28 @@ class Mario:
             if self.mX == 0:
                 self.mX += 2
 
+class Enemies:
+    def __init__(self, collideX, collideY):
+        self.collideX = collideX
+        self.collideY = collideY
+        self.direction = 1
+
+        self.posX = 50
+        self.posY = 50
+        self.velY = 0
+        self.isFalling = False
+        self.isOver = False
+        self.currPlat = None
+
+"""
+class Turtle(Enemies):
+    def __init__(self):
+    def movement(self):
+"""
+
+"""
+class Crab(Enemies):
+    def __init__(self):
+    def movement(self):
+"""
+
