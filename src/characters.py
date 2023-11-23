@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 class Mario:
     def __init__(self, collideX, collideY):
         """
@@ -9,25 +11,47 @@ class Mario:
         self.collideX = collideX
         self.collideY = collideY
         self.posX = 50
-        self.posY = 50
+        self.posY = 30
         self.velY = 0
         self.mX = 0
+
         self.isFalling = False
         self.isOver = False
         self.currPlat = None
 
-    def movement(self, command):
+        self.runframes = [[16, 3, 16, 21],[32, 3, 16, 21],[48, 3, 16, 21]]
+        self.stillframe = [0, 3, 15, 21]
+        self.currframe = self.stillframe
+        self.currPhaseFrame = 0
+        self.direction = 1
+
+    def movement(self, command, currPhase = 0):
         if command == 'up':
             if self.velY == -1 and self.isFalling == False:
-                self.velY = 8
+                self.velY = 9
 
         elif command == 'left':
             if self.mX == 0:
-                self.mX -= 2
+                self.mX -= 4
+                self.direction = -1
+                self.currframe = deepcopy(self.runframes[self.currPhaseFrame])
+                self.currframe[2] = self.currframe[2] * self.direction
+
+                if self.currPhaseFrame == 2:
+                    self.currPhaseFrame = 0
+                elif self.currPhaseFrame != 2:
+                    self.currPhaseFrame += 1
 
         elif command == 'right':
             if self.mX == 0:
-                self.mX += 2
+                self.mX += 4
+                self.direction = 1
+                self.currframe = self.runframes[self.currPhaseFrame]
+
+                if self.currPhaseFrame == 2:
+                    self.currPhaseFrame = 0
+                elif self.currPhaseFrame != 2:
+                    self.currPhaseFrame += 1
 
     def checkMovement(self, dimX):
         # Check if the position of the character must be higher
@@ -47,11 +71,9 @@ class Mario:
                 self.isFalling = False
                 self.velY = -1
 
-
             else:
-                if self.velY < 8:
+                if self.velY < 9:
                     self.velY += 1
-
                 self.posY += self.velY
 
         # Check if Mario is still over a platform
@@ -83,6 +105,10 @@ class Mario:
                 self.posX = 0
                 # HERE TOO
                 self.posY -= 2
+
+        elif self.mX == 0:
+            self.currframe = deepcopy(self.stillframe)
+            self.currframe[2] = self.currframe[2] * self.direction
 
     def checkIsOver(self, currplatforms):
         # Loop that checks whether the character is over a platform or not
