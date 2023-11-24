@@ -13,7 +13,7 @@ from os import getcwd
 
 
 class App:
-    def __init__(self, dimx, dimy, mario: object, screens: list, dir):
+    def __init__(self, dimx, dimy, mario: object, screens: list, enemies: list, dir):
         """
         :param dimx: Dimensions of the window (x)
         :param dimy: Dimensions of the window (y)
@@ -26,9 +26,11 @@ class App:
 
         self.mario = mario
         self.screens = screens
+        self.enemies = enemies
 
         self.currlv = 0
         self.currplatforms = self.screens[self.currlv].platforms
+        self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
 
         pyxel.load(f"{dir}/resources/texture.pyxres", True, True, False, False)
@@ -41,6 +43,10 @@ class App:
 
         self.mario.checkIsOver(self.currplatforms)
         self.mario.checkMovement(self.dimX)
+
+        for i in self.enemies[self.currlv]:
+            i.checkIsOver(self.currplatforms)
+            i.movement()
 
         # Exec the functions for the movement
         if pyxel.btnp(pyxel.KEY_W):
@@ -57,6 +63,9 @@ class App:
         pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
                   self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3])
 
+        for i in self.currenemies:
+            pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3])
+
         for i in range(len(self.currplatforms)):
             pyxel.rect(self.currplatforms[i].positionX, self.currplatforms[i].positionY,
                        self.currplatforms[i].width, self.currplatforms[i].height, 3)
@@ -72,4 +81,6 @@ screen1 = levels.Screen(2, [levels.Platform(0, 58, 71, 4),
                             levels.Platform(0, 196, 240, 4)],
                         [[0, 15], [230, 15]])
 
-App(240, 200, characters.Mario(16, 21), [screen1], getcwd())
+enemies1 = [characters.Turtle(16, 16, 1)]
+
+App(240, 200, characters.Mario(16, 21), [screen1], [enemies1], getcwd())

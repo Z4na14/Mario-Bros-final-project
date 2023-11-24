@@ -20,7 +20,7 @@ class Mario:
         self.currPlat = None
 
         self.runframes = [[16, 3, 16, 21],[32, 3, 16, 21],[48, 3, 16, 21]]
-        self.stillframe = [0, 3, 15, 21]
+        self.stillframe = [192, 3, 15, 21]
         self.currframe = self.stillframe
         self.currPhaseFrame = 0
         self.direction = 1
@@ -128,23 +128,73 @@ class Mario:
 
 
 class Enemies:
-    def __init__(self, collideX, collideY):
+    def __init__(self, collideX, collideY, direction):
         self.collideX = collideX
         self.collideY = collideY
-        self.direction = 1
+        self.direction = direction
 
-        self.posX = 50
-        self.posY = 50
+        self.posX = 0
+        self.posY = 10
         self.velY = 0
-        self.isFalling = False
+        self.isFalling = True
+        self.isOver = False
+        self.currPhaseFrame = 0
+
+
+class Turtle(Enemies):
+    def __init__(self, collideX, collideY, direction):
+        super().__init__(collideX, collideY, direction)
+
+        self.movingFrames = [[0, 24, 16, 16], [16, 24, 16, 16], [32, 24, 16, 16]]
+        self.currframe = []
+
+    def movement(self):
+        self.posX += 2 * self.direction
+
+        self.currframe = deepcopy(self.movingFrames[self.currPhaseFrame])
+        self.currframe[2] = self.currframe[2] * self.direction
+
+        if self.currPhaseFrame == 2:
+            self.currPhaseFrame = 0
+        elif self.currPhaseFrame != 2:
+            self.currPhaseFrame += 1
+
+        # Make the gravity
+        if self.isFalling:
+            if self.isOver:
+                self.posY = self.currPlat.positionY - self.collideY
+                self.isFalling = False
+                self.velY = -1
+
+            else:
+                if self.velY < 10:
+                    self.velY += 1
+                self.posY += self.velY
+
+        # Check if Mario is still over a platform
+        elif not self.isFalling:
+            if not self.isOver:
+                self.isFalling = True
+                self.velY = 0
+
+
+    def checkIsOver(self, currplatforms):
+        # Loop that checks whether the character is over a platform or not
+        # First looks if the character is parallel to a platform
+        for i in range(len(currplatforms)):
+            if (currplatforms[i].positionY - 8) <= (self.posY + self.collideY) <= currplatforms[i].positionY:
+                # Then checks if it is also in the right position of the platform
+                if currplatforms[i].positionX <= (self.posX + (self.collideX // 2)) <= (
+                        currplatforms[i].positionX + currplatforms[i].width):
+                    # Then we add a bool to pass to the rest of the program that is over
+                    # a platform and the characteristics of that platform
+                    self.isOver = True
+                    self.currPlat = currplatforms[i]
+                    return  # Exit the loop since we found the platform
+
+        # If no platform is found, set isOver to False
         self.isOver = False
         self.currPlat = None
-
-"""
-class Turtle(Enemies):
-    def __init__(self):
-    def movement(self):
-"""
 
 """
 class Crab(Enemies):
