@@ -16,7 +16,7 @@ class App:
 
         self.dimX = dimx
         self.dimY = dimy
-        pyxel.init(dimx, dimy)
+        pyxel.init(dimx, dimy, fps=30)
 
         self.mario = mario
         self.screens = screens
@@ -61,17 +61,16 @@ class App:
 screen1 = levels.Screen(1)
 """
 
-screen2 = levels.Screen(2, [levels.Platform(0, 35, 44, 3),
-                            levels.Platform(116, 35, 44, 3),
-                            levels.Platform(0, 85, 44, 3),
-                            levels.Platform(116, 85, 44, 3),
-                            levels.Platform(58, 60, 44, 3),
-                            levels.Platform(0, 35, 44, 3),
-                            levels.Platform(0, 117, 160, 3)],
-                        [[0, 10], [150, 10]])
+screen2 = levels.Screen(2, [levels.Platform(0, 58, 71, 4),
+                            levels.Platform(170, 58, 71, 4),
+                            levels.Platform(85, 106, 71, 4),
+                            levels.Platform(0, 150, 71, 4),
+                            levels.Platform(170, 150, 71, 4),
+                            levels.Platform(0, 196, 240, 4)],
+                        [[0, 15], [230, 15]])
 """
 screen2 = levels.Screen(3)
 screen2 = levels.Screen(4)
 """
 
-App(160, 120, characters.Mario(16, 21), [screen2], os.getcwd())
+App(240, 200, characters.Mario(16, 21), [screen2], os.getcwd())

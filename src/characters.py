@@ -10,12 +10,12 @@ class Mario:
         """
         self.collideX = collideX
         self.collideY = collideY
-        self.posX = 50
-        self.posY = 30
+        self.posX = 110
+        self.posY = 170
         self.velY = 0
         self.mX = 0
 
-        self.isFalling = False
+        self.isFalling = True
         self.isOver = False
         self.currPlat = None
 
@@ -28,12 +28,14 @@ class Mario:
     def movement(self, command, currPhase = 0):
         if command == 'up':
             if self.velY == -1 and self.isFalling == False:
-                self.velY = 9
+                self.velY = 10
 
         elif command == 'left':
             if self.mX == 0:
                 self.mX -= 4
                 self.direction = -1
+
+                # We invert the sprite when moving to the left
                 self.currframe = deepcopy(self.runframes[self.currPhaseFrame])
                 self.currframe[2] = self.currframe[2] * self.direction
 
@@ -72,7 +74,7 @@ class Mario:
                 self.velY = -1
 
             else:
-                if self.velY < 9:
+                if self.velY < 10:
                     self.velY += 1
                 self.posY += self.velY
 
@@ -91,7 +93,7 @@ class Mario:
             NEEDS CHANGE, WORKS REALLY BAD
             """
             # Check if character leaves screen
-            if self.posX < -5:
+            if self.posX < 0:
                 self.posX = dimX
                 # TEMPORAL CHANGE, WE SHOULD DO IT SEAMLESSLY
                 """
@@ -101,7 +103,7 @@ class Mario:
                 """
                 self.posY -= 2
 
-            elif self.posX > dimX + 5:
+            elif self.posX > dimX:
                 self.posX = 0
                 # HERE TOO
                 self.posY -= 2
