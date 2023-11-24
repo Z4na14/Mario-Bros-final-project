@@ -1,7 +1,15 @@
+"""
+Final project for a university class, all the progress is uploaded
+in https://github.com/Z4na14/Mario-Bros-final-project
+Authors:
+    Jorge Adrian Saghin Dudulea (zanajorgesaghin@gmail.com)
+    Antonio Nicolas Lemus Yeguas
+"""
+
 import pyxel
 import characters
 import levels
-import os
+from os import getcwd
 
 
 class App:
@@ -10,8 +18,6 @@ class App:
         :param dimx: Dimensions of the window (x)
         :param dimy: Dimensions of the window (y)
         :param mario: Class of the main character
-        TO DO: Add collider check creating simple blocks (Use another
-        class for every object)
         """
 
         self.dimX = dimx
@@ -25,7 +31,7 @@ class App:
         self.currplatforms = self.screens[self.currlv].platforms
         self.currpipes = self.screens[self.currlv].pipes
 
-        pyxel.load(f"{dir}/resources/texture.pyxres", True, False, False, False)
+        pyxel.load(f"{dir}/resources/texture.pyxres", True, True, False, False)
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -57,20 +63,13 @@ class App:
         for i in range(len(self.currpipes)):
             pyxel.rect(self.currpipes[i][0], self.currpipes[i][1], 10, 10, 1)
 
-"""
-screen1 = levels.Screen(1)
-"""
 
-screen2 = levels.Screen(2, [levels.Platform(0, 58, 71, 4),
+screen1 = levels.Screen(2, [levels.Platform(0, 58, 71, 4),
                             levels.Platform(170, 58, 71, 4),
                             levels.Platform(85, 106, 71, 4),
                             levels.Platform(0, 150, 71, 4),
                             levels.Platform(170, 150, 71, 4),
                             levels.Platform(0, 196, 240, 4)],
                         [[0, 15], [230, 15]])
-"""
-screen2 = levels.Screen(3)
-screen2 = levels.Screen(4)
-"""
 
-App(240, 200, characters.Mario(16, 21), [screen2], os.getcwd())
+App(240, 200, characters.Mario(16, 21), [screen1], getcwd())

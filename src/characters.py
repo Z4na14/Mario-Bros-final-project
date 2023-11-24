@@ -90,22 +90,17 @@ class Mario:
             self.mX = 0
 
             """
-            NEEDS CHANGE, WORKS REALLY BAD
+            TO DO: Mario falls when standing right
+            in the corner.
             """
+
             # Check if character leaves screen
             if self.posX < 0:
                 self.posX = dimX
-                # TEMPORAL CHANGE, WE SHOULD DO IT SEAMLESSLY
-                """
-                Character falls from the platform when stopping
-                right in the border of the screen
-                TO DO: Solve bug
-                """
                 self.posY -= 2
 
             elif self.posX > dimX:
                 self.posX = 0
-                # HERE TOO
                 self.posY -= 2
 
         elif self.mX == 0:
