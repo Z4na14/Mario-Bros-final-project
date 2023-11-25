@@ -81,6 +81,6 @@ screen1 = levels.Screen(2, [levels.Platform(0, 58, 71, 4),
                             levels.Platform(0, 196, 240, 4)],
                         [[0, 15], [230, 15]])
 
-enemies1 = [characters.Turtle(16, 16, 1)]
+enemies1 = [characters.Turtle(16, 16, 1), characters.Crab(16, 16, 0-1)]
 
 App(240, 200, characters.Mario(16, 21), [screen1], [enemies1], getcwd())

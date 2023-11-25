@@ -1,4 +1,6 @@
 from copy import deepcopy
+import pyxel
+
 
 class Mario:
     def __init__(self, collideX, collideY):
@@ -42,7 +44,8 @@ class Mario:
                 if self.currPhaseFrame == 2:
                     self.currPhaseFrame = 0
                 elif self.currPhaseFrame != 2:
-                    self.currPhaseFrame += 1
+                    if pyxel.frame_count % 2 == 0:
+                        self.currPhaseFrame += 1
 
         elif command == 'right':
             if self.mX == 0:
@@ -53,7 +56,8 @@ class Mario:
                 if self.currPhaseFrame == 2:
                     self.currPhaseFrame = 0
                 elif self.currPhaseFrame != 2:
-                    self.currPhaseFrame += 1
+                    if pyxel.frame_count % 2 == 0:
+                        self.currPhaseFrame += 1
 
     def checkMovement(self, dimX):
         # Check if the position of the character must be higher
@@ -133,19 +137,10 @@ class Enemies:
         self.collideY = collideY
         self.direction = direction
 
-        self.posX = 0
-        self.posY = 10
         self.velY = 0
         self.isFalling = True
         self.isOver = False
         self.currPhaseFrame = 0
-
-
-class Turtle(Enemies):
-    def __init__(self, collideX, collideY, direction):
-        super().__init__(collideX, collideY, direction)
-
-        self.movingFrames = [[0, 24, 16, 16], [16, 24, 16, 16], [32, 24, 16, 16]]
         self.currframe = []
 
     def movement(self):
@@ -157,7 +152,8 @@ class Turtle(Enemies):
         if self.currPhaseFrame == 2:
             self.currPhaseFrame = 0
         elif self.currPhaseFrame != 2:
-            self.currPhaseFrame += 1
+            if pyxel.frame_count % 3 == 0:
+                self.currPhaseFrame += 1
 
         # Make the gravity
         if self.isFalling:
@@ -196,9 +192,20 @@ class Turtle(Enemies):
         self.isOver = False
         self.currPlat = None
 
-"""
-class Crab(Enemies):
-    def __init__(self):
-    def movement(self):
-"""
 
+class Turtle(Enemies):
+    def __init__(self, collideX, collideY, direction):
+        super().__init__(collideX, collideY, direction)
+        self.posX = 0
+        self.posY = 10
+
+        self.movingFrames = [[0, 24, 16, 16], [16, 24, 16, 16], [32, 24, 16, 16]]
+
+
+class Crab(Enemies):
+    def __init__(self, collideX, collideY, direction):
+        super().__init__(collideX, collideY, direction)
+        self.posX = 200
+        self.posY = 10
+
+        self.movingFrames = [[0, 40, 16, 16], [16, 40, 16, 16], [32, 40, 16, 16], [48, 40, 16, 16]]
