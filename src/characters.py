@@ -178,9 +178,9 @@ class Mario:
     def checkIsParallel(self, currplatforms):
         for i in range(len(currplatforms)):
             if (currplatforms[i].positionX + currplatforms[i].width) <= self.posX <= \
-                    (currplatforms[i].positionX + currplatforms[i].width + 4) or \
-                    currplatforms[i].positionX >= (self.posX + self.collideX) >= (currplatforms[i].positionX - 4):
-                if (self.posY - 1) >= currplatforms[i].positionY >= (self.posY + self.collideY + 1):
+                    (currplatforms[i].positionX + currplatforms[i].width + 2) or \
+                    currplatforms[i].positionX >= self.posX >= (currplatforms[i].positionX - 2):
+                if self.posY >= currplatforms[i].positionY >= (self.posY + self.collideY):
                     return True
 
         return False
