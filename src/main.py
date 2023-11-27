@@ -33,6 +33,14 @@ class App:
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
 
+        # Set the spawn point for all the enemies at the pipes
+        for i, a in enumerate(self.currenemies):
+            if i % 2 == 0:
+                a.posX = self.currpipes[0][0]
+            elif i % 2 != 0:
+                a.posX = self.currpipes[1][0]
+            a.posY = self.currpipes[0][1]
+
         pyxel.load(f"{directory}/resources/texture.pyxres")
         pyxel.run(self.update, self.draw)
 
@@ -46,7 +54,7 @@ class App:
 
         for i in self.enemies[self.currlv]:
             i.checkIsOver(self.currplatforms)
-            i.movement()
+            i.movement(self.dimX)
 
         # Exec the functions for the movement
         if pyxel.btnp(pyxel.KEY_W):
@@ -64,27 +72,34 @@ class App:
 
     def draw(self):
         pyxel.cls(0)
+
         pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
                   self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
 
         for i in self.currenemies:
             pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=0)
 
+        pyxel.bltm(0, 0, 0, 0, 0, 240, 200, colkey=8)
+
+        """
         for i in range(len(self.currplatforms)):
-            pyxel.rect(self.currplatforms[i].positionX+5, self.currplatforms[i].positionY,
-                       self.currplatforms[i].width-10, self.currplatforms[i].height, 3)
+            pyxel.rect(self.currplatforms[i].positionX, self.currplatforms[i].positionY,
+                       self.currplatforms[i].width, self.currplatforms[i].height, 3)
+        
         for i in range(len(self.currpipes)):
             pyxel.rect(self.currpipes[i][0], self.currpipes[i][1], 10, 10, 1)
+        """
 
 
-screen1 = levels.Screen(2, [levels.Platform(0, 43, 71, 5),
-                            levels.Platform(170, 43, 71, 5),
-                            levels.Platform(70, 94, 99, 5),
-                            levels.Platform(0, 145, 71, 5),
-                            levels.Platform(170, 145, 71, 5),
-                            levels.Platform(0, 196, 240, 5)],
-                        [[0, 15], [230, 15]])
+# On top of the measures of the platforms, we need to add the lenght of mario (function)
+screen1 = levels.Screen(2, [levels.Platform(0, 48, 72, 8),
+                            levels.Platform(168, 48, 72, 8),
+                            levels.Platform(48, 96, 144, 8),
+                            levels.Platform(0, 144, 72, 8),
+                            levels.Platform(168, 144, 72, 8),
+                            levels.Platform(0, 192, 240, 8)],
+                        [[0, 30], [230, 30]])
 
-enemies1 = [characters.Turtle("Turtle", 16, 16, 1), characters.Crab("Crab", 16, 16, 0-1)]
+enemies1 = [characters.Turtle("Turtle", 16, 16, 1), characters.Crab("Crab", 16, 16, 0 - 1)]
 
 App(240, 200, characters.Mario(16, 21), [screen1], [enemies1], getcwd())

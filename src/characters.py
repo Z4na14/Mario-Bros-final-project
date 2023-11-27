@@ -103,7 +103,7 @@ class Mario:
                 If not over platform, keep falling until a certain velocity
                 and set mario frames
                 """
-                if self.velY < 10:
+                if self.velY < 7:
                     self.velY += 1
                 self.posY += self.velY
                 self.currframe = deepcopy(self.jumpframe)
@@ -143,10 +143,11 @@ class Mario:
         # Loop that checks whether the character is over a platform or not
         # First looks if the character is parallel to a platform
         for i in range(len(currplatforms)):
-            if (currplatforms[i].positionY - 8) <= (self.posY + self.collideY) <= currplatforms[i].positionY:
+            if (currplatforms[i].positionY - 7) <= (self.posY + self.collideY) <= currplatforms[i].positionY:
                 # Then checks if it is also in the right position of the platform
-                if currplatforms[i].positionX <= (self.posX + (self.collideX // 2)) <= (
-                        currplatforms[i].positionX + currplatforms[i].width):
+                if currplatforms[i].positionX <= self.posX <= (currplatforms[i].positionX + currplatforms[i].width) \
+                        or currplatforms[i].positionX <= (self.posX + self.collideX) <= \
+                        (currplatforms[i].positionX + currplatforms[i].width):
                     # Then we add a bool to pass to the rest of the program that is over
                     # a platform and the characteristics of that platform
                     self.isOver = True
@@ -160,11 +161,12 @@ class Mario:
     def checkIsUnder(self, currplatforms):
         # Same as before but checking if it is under the platform
         for i in range(len(currplatforms)):
-            if (currplatforms[i].positionY + currplatforms[i].height) <= self.posY + 2 <= \
-                    (currplatforms[i].positionY + currplatforms[i].height):
+            if (currplatforms[i].positionY + currplatforms[i].height) <= self.posY <= \
+                    (currplatforms[i].positionY + currplatforms[i].height + 8):
                 # Then checks if it is also in the right position of the platform
-                if currplatforms[i].positionX <= (self.posX + (self.collideX // 2)) <= (
-                        currplatforms[i].positionX + currplatforms[i].width):
+                if currplatforms[i].positionX <= self.posX <= (currplatforms[i].positionX + currplatforms[i].width) \
+                        or currplatforms[i].positionX <= (self.posX + self.collideX) <= \
+                        (currplatforms[i].positionX + currplatforms[i].width):
                     self.posY = currplatforms[i].positionY + currplatforms[i].height
                     return True
 
@@ -177,10 +179,13 @@ class Mario:
 
     def checkIsParallel(self, currplatforms):
         for i in range(len(currplatforms)):
-            if (currplatforms[i].positionX + currplatforms[i].width) <= self.posX <= \
-                    (currplatforms[i].positionX + currplatforms[i].width + 2) or \
-                    currplatforms[i].positionX >= self.posX >= (currplatforms[i].positionX - 2):
-                if self.posY >= currplatforms[i].positionY >= (self.posY + self.collideY):
+            if self.posY >= currplatforms[i].positionY >= (self.posY + self.collideY) or \
+                    self.posY >= (currplatforms[i].positionY + currplatforms[i].height) >= \
+                    (self.posY + self.collideY):
+                if (currplatforms[i].positionX + currplatforms[i].width) <= self.posX <= \
+                        (currplatforms[i].positionX + currplatforms[i].width + 4) or \
+                        currplatforms[i].positionX >= self.posX >= (currplatforms[i].positionX - 4):
+                    print("working?")
                     return True
 
         return False
@@ -214,9 +219,17 @@ class Enemies:
     def __repr__(self):
         return self.__str__()
 
-    def movement(self):
+    def movement(self, dimX):
         # Automatic movement to the direction set
         self.posX += self.mX * self.direction
+        # Check if character leaves screen
+        if self.posX < 0:
+            self.posX = dimX
+            self.posY -= 2
+
+        elif self.posX > dimX:
+            self.posX = 0
+            self.posY -= 2
 
         # Animating the enemies
         self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
@@ -236,7 +249,7 @@ class Enemies:
                 self.velY = -1
 
             else:
-                if self.velY < 10:
+                if self.velY < 8:
                     self.velY += 1
                 self.posY += self.velY
 
