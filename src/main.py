@@ -52,9 +52,17 @@ class App:
         self.mario.checkIsOver(self.currplatforms)
         self.mario.checkMovement(self.dimX, self.currplatforms)
 
-        for i in self.enemies[self.currlv]:
+        if self.mario.kickPos != [0, 0, None]:
+            self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
+                                                           self.mario.kickPos[1],
+                                                           "block")
+
+        for i in self.currenemies:
             i.checkIsOver(self.currplatforms)
             i.movement(self.dimX)
+
+        for i in self.currplatforms:
+            i.aniKick()
 
         # Exec the functions for the movement
         if pyxel.btnp(pyxel.KEY_W):
@@ -67,8 +75,11 @@ class App:
             self.mario.movement('right')
 
         # TEMPORAL: Change status of crab (Debug)
-        elif pyxel.btn(pyxel.KEY_P):
+        elif pyxel.btnp(pyxel.KEY_P):
             self.currenemies[1].changeStatus()
+
+        elif pyxel.btnp(pyxel.KEY_O):
+            self.currplatforms[0].kick(20, 45, "block")
 
     def draw(self):
         pyxel.cls(0)
@@ -81,10 +92,15 @@ class App:
 
         pyxel.bltm(0, 0, 0, 0, 0, 240, 200, colkey=8)
 
+        for i in self.currplatforms:
+            if i.kickStatus:
+                pyxel.blt(i.kickX, i.kickY, 0, i.framesPlatform[i.currPhaseFrame][0],
+                          i.framesPlatform[i.currPhaseFrame][1], i.framesPlatform[i.currPhaseFrame][2],
+                          i.framesPlatform[i.currPhaseFrame][3], colkey=8)
         """
         for i in range(len(self.currplatforms)):
-            pyxel.rect(self.currplatforms[i].positionX, self.currplatforms[i].positionY,
-                       self.currplatforms[i].width, self.currplatforms[i].height, 3)
+            pyxel.rect(i.positionX, i.positionY,
+                       i.width, i.height, 3)
         
         for i in range(len(self.currpipes)):
             pyxel.rect(self.currpipes[i][0], self.currpipes[i][1], 10, 10, 1)

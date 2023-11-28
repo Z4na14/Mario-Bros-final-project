@@ -17,6 +17,7 @@ class Mario:
         self.velY = 0
         # Used for horizontal movement
         self.mX = 0
+        self.kickPos = [0, 0, None]
 
         # Status checks
         self.isFalling = True
@@ -80,9 +81,10 @@ class Mario:
             # Set the frame of the jump
             self.currframe = deepcopy(self.jumpframe)
             self.currframe[2] = self.currframe[2] * self.direction
+            self.kickPos = self.checkIsUnder(currplatforms)
 
             # Mario falls after reaching peak
-            if self.velY <= 0 or self.checkIsUnder(currplatforms):
+            if self.velY <= 0 or self.kickPos != [0, 0, None]:
                 self.isFalling = True
                 self.velY = 0
 
@@ -168,9 +170,9 @@ class Mario:
                         or currplatforms[i].positionX <= (self.posX + self.collideX) <= \
                         (currplatforms[i].positionX + currplatforms[i].width):
                     self.posY = currplatforms[i].positionY + currplatforms[i].height
-                    return True
+                    return [self.posX + (self.collideY // 2), self.posY, i]
 
-        return False
+        return [0, 0, None]
 
     """
     NOT WORKING
