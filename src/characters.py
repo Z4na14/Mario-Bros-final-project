@@ -284,7 +284,6 @@ class Enemies:
         self.isDed = True
 
 
-
 class Turtle(Enemies):
     def __init__(self, enemy, collideX, collideY, direction):
         super().__init__(enemy, collideX, collideY, direction)
