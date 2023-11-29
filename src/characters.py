@@ -38,7 +38,7 @@ class Mario:
         :param command: Execute the following keyboard press
         """
         if command == 'up':
-            if self.velY == -1 and not self.isFalling:
+            if self.velY == 0 and not self.isFalling:
                 self.velY = 10
 
         elif command == 'left':
@@ -52,10 +52,10 @@ class Mario:
                     self.currframe[2] = self.currframe[2] * self.direction
 
                     # Change the frame of the animation only on even global frames
-                    if self.currPhaseFrame == 2:
-                        self.currPhaseFrame = 0
-                    elif self.currPhaseFrame != 2:
-                        if pyxel.frame_count % 2 == 0:
+                    if pyxel.frame_count % 2 == 0:
+                        if self.currPhaseFrame == 2:
+                            self.currPhaseFrame = 0
+                        elif self.currPhaseFrame != 2:
                             self.currPhaseFrame += 1
 
         elif command == 'right':
@@ -66,10 +66,10 @@ class Mario:
                 if self.isOver:
                     self.currframe = self.runframes[self.currPhaseFrame]
 
-                    if self.currPhaseFrame == 2:
-                        self.currPhaseFrame = 0
-                    elif self.currPhaseFrame != 2:
-                        if pyxel.frame_count % 2 == 0:
+                    if pyxel.frame_count % 2 == 0:
+                        if self.currPhaseFrame == 2:
+                            self.currPhaseFrame = 0
+                        elif self.currPhaseFrame != 2:
                             self.currPhaseFrame += 1
 
     def checkMovement(self, dimX, currplatforms):
@@ -97,7 +97,7 @@ class Mario:
                 """
                 self.posY = self.currPlat.positionY - self.collideY
                 self.isFalling = False
-                self.velY = -1
+                self.velY = 0
                 self.currframe = self.stillframe
 
             else:
@@ -178,7 +178,6 @@ class Mario:
     NOT WORKING
     TO DO: Repair the frontal collision
     """
-
     def checkIsParallel(self, currplatforms):
         for i in currplatforms:
             if self.posY >= i.positionY >= (self.posY + self.collideY) or \
@@ -187,7 +186,6 @@ class Mario:
                 if (i.positionX + i.width) <= self.posX <= \
                         (i.positionX + i.width + 4) or \
                         i.positionX >= self.posX >= (i.positionX - 4):
-                    print("working?")
                     return True
 
         return False
@@ -204,6 +202,7 @@ class Enemies:
         self.velY = 0
         self.mX = 1
         self.isDed = False
+        self.isFlipped = False
         self.enemy = enemy
 
         # Status checks
@@ -225,42 +224,63 @@ class Enemies:
     def movement(self, dimX):
         # Automatic movement to the direction set
         self.posX += self.mX * self.direction
-        # Check if character leaves screen
-        if self.posX < 0:
-            self.posX = dimX
-            self.posY -= 2
 
-        elif self.posX > dimX:
-            self.posX = 0
-            self.posY -= 2
+        if self.isDed and self.isFlipped:
+            if self.velY > 0:
+                self.posY -= self.velY
+                self.velY -= 1
 
-        # Animating the enemies
-        self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
-        self.currframe[2] = self.currframe[2] * self.direction
+            elif self.velY <= 0:
+                if self.velY > 0 - 8:
+                    self.velY -= 1
+                self.posY -= self.velY
 
-        if self.currentPhaseFrame == 2:
-            self.currentPhaseFrame = 0
-        elif self.currentPhaseFrame != 2:
+        if self.isFlipped:
+            # Animating the enemy when fallen
+            self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
+            self.currframe[2] = self.currframe[2] * self.direction
+
             if pyxel.frame_count % 3 == 0:
-                self.currentPhaseFrame += 1
+                if self.currentPhaseFrame == 1:
+                    self.currentPhaseFrame = 0
+                elif self.currentPhaseFrame != 1:
+                    self.currentPhaseFrame += 1
 
-        # Make the gravity
-        if self.isFalling:
-            if self.isOver:
-                self.posY = self.currPlat.positionY - self.collideY
-                self.isFalling = False
-                self.velY = -1
+        elif not self.isDed:
+            # Check if character leaves screen
+            if self.posX < 0:
+                self.posX = dimX
+                self.posY -= 2
 
-            else:
-                if self.velY < 8:
-                    self.velY += 1
-                self.posY += self.velY
+            elif self.posX > dimX:
+                self.posX = 0
+                self.posY -= 2
 
-        # Check if enemy is still over a platform
-        elif not self.isFalling:
-            if not self.isOver:
-                self.isFalling = True
-                self.velY = 0
+            # Animating the enemies
+            self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
+            self.currframe[2] = self.currframe[2] * self.direction
+            if pyxel.frame_count % 3 == 0:
+                if self.currentPhaseFrame == 2:
+                    self.currentPhaseFrame = 0
+                elif self.currentPhaseFrame != 2:
+                    self.currentPhaseFrame += 1
+
+            # Make the gravity
+            if self.isFalling:
+                if self.isOver:
+                    self.posY = self.currPlat.positionY - self.collideY
+                    self.isFalling = False
+
+                else:
+                    if self.velY < 8:
+                        self.velY += 1
+                    self.posY += self.velY
+
+            # Check if enemy is still over a platform
+            elif not self.isFalling:
+                if not self.isOver:
+                    self.isFalling = True
+                    self.velY = 0
 
     def checkIsOver(self, currplatforms):
         for i in currplatforms:
@@ -279,9 +299,23 @@ class Enemies:
             self.isOver = False
             self.currPlat = None
 
-    def kickFall(self):
-        self.posY -= 30
-        self.isDed = True
+    """
+    TO DO: Finish mario check when hes over the flipped enemies to kill them
+    """
+    def kickFall(self, state):
+        if state == "turn":
+            self.isFlipped = True
+            self.mX = 0
+            # Set state and animation
+            self.currentSetFrames = self.fallenFrames
+            self.currentPhaseFrame = 0
+
+        elif state == "fall":
+            # Create movement
+            self.velY = 7
+            self.mX = 1
+
+            self.isDed = True
 
 
 class Turtle(Enemies):
@@ -291,6 +325,7 @@ class Turtle(Enemies):
         self.posY = 10
 
         self.currentSetFrames = [[0, 24, -16, 16], [16, 24, -16, 16], [32, 24, -16, 16]]
+        self.fallenFrames = [[96, 24, 16, 16], [112, 24, 16, 16]]
 
 
 class Crab(Enemies):
@@ -302,6 +337,7 @@ class Crab(Enemies):
 
         self.movingFramesNormal = [[0, 40, 16, 16], [16, 40, 16, 16], [32, 40, 16, 16], [48, 40, 16, 16]]
         self.movingFramesAngry = [[88, 40, 16, 16], [104, 40, 16, 16], [120, 40, 16, 16], [136, 40, 16, 16]]
+        self.fallenFrames = [[152, 40, 16, 16], [168, 40, 16, 16]]
 
         self.currentSetFrames = self.movingFramesNormal
 

@@ -57,15 +57,14 @@ class App:
             i.movement(self.dimX)
 
             if self.mario.kickPos != [0, 0, None]:
+                if (self.mario.kickPos[1]-13) <= i.posY <= (self.mario.kickPos[1] - 5):
+                    if self.mario.kickPos[0]-5 <= (i.posX + i.collideX // 2) <= \
+                            (self.mario.kickPos[0] + 16):
+                        i.kickFall("turn")
+
                 self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
                                                                self.mario.kickPos[1],
                                                                "block")
-
-                if (self.mario.kickPos[1]-13) <= i.posY <= (self.mario.kickPos[1] - 5):
-                    print(self.mario.kickPos[0], i.posX)
-                    if self.mario.kickPos[0]-5 <= (i.posX + i.collideX // 2) <= \
-                            (self.mario.kickPos[0] + 16):
-                        i.kickFall()
 
         for i in self.currplatforms:
             if i.kickStatus:
