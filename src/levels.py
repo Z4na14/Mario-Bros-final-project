@@ -45,27 +45,26 @@ class Platform:
             self.kickStatus = True
 
     def aniKick(self):
-        if self.kickStatus:
-            print("PEME")
-            if not self.recover:
-                if self.currPhaseFrame == 2:
-                    self.recover = True
+        if not self.recover:
+            if self.currPhaseFrame == 2:
+                self.recover = True
 
-                elif self.currPhaseFrame != 2:
-                    if pyxel.frame_count % 2 == 0:
-                        self.currPhaseFrame += 1
-                        self.kickY -= 2
+            elif self.currPhaseFrame != 2:
+                if pyxel.frame_count % 2 == 0:
+                    self.currPhaseFrame += 1
+                    self.kickY -= 2
 
-            elif self.recover:
-                if self.currPhaseFrame == 0:
-                    self.recover = False
-                    self.kickStatus = False
-                    self.currPhaseFrame = -1
+        elif self.recover:
+            if self.currPhaseFrame == 0:
+                self.recover = False
+                self.kickStatus = False
+                self.currPhaseFrame = -1
+                return True
 
-                elif self.currPhaseFrame != 0:
-                    if pyxel.frame_count % 2 == 0:
-                        self.currPhaseFrame -= 1
-                        self.kickY += 2
+            elif self.currPhaseFrame != 0:
+                if pyxel.frame_count % 2 == 0:
+                    self.currPhaseFrame -= 1
+                    self.kickY += 2
 
 
 class Screen:

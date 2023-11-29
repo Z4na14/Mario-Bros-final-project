@@ -144,16 +144,16 @@ class Mario:
     def checkIsOver(self, currplatforms):
         # Loop that checks whether the character is over a platform or not
         # First looks if the character is parallel to a platform
-        for i in range(len(currplatforms)):
-            if (currplatforms[i].positionY - 7) <= (self.posY + self.collideY) <= currplatforms[i].positionY:
+        for i in currplatforms:
+            if (i.positionY - 7) <= (self.posY + self.collideY) <= i.positionY:
                 # Then checks if it is also in the right position of the platform
-                if currplatforms[i].positionX <= self.posX <= (currplatforms[i].positionX + currplatforms[i].width) \
-                        or currplatforms[i].positionX <= (self.posX + self.collideX) <= \
-                        (currplatforms[i].positionX + currplatforms[i].width):
+                if i.positionX <= self.posX <= (i.positionX + i.width) \
+                        or i.positionX <= (self.posX + self.collideX) <= \
+                        (i.positionX + i.width):
                     # Then we add a bool to pass to the rest of the program that is over
                     # a platform and the characteristics of that platform
                     self.isOver = True
-                    self.currPlat = currplatforms[i]
+                    self.currPlat = i
                     return  # Exit the loop since we found the platform
 
         # If no platform is found, set isOver to False
@@ -162,15 +162,15 @@ class Mario:
 
     def checkIsUnder(self, currplatforms):
         # Same as before but checking if it is under the platform
-        for i in range(len(currplatforms)):
-            if (currplatforms[i].positionY + currplatforms[i].height) <= self.posY <= \
-                    (currplatforms[i].positionY + currplatforms[i].height + 8):
+        for a, i in enumerate(currplatforms):
+            if (i.positionY + i.height) <= self.posY <= \
+                    (i.positionY + i.height + 8):
                 # Then checks if it is also in the right position of the platform
-                if currplatforms[i].positionX <= self.posX <= (currplatforms[i].positionX + currplatforms[i].width) \
-                        or currplatforms[i].positionX <= (self.posX + self.collideX) <= \
-                        (currplatforms[i].positionX + currplatforms[i].width):
-                    self.posY = currplatforms[i].positionY + currplatforms[i].height
-                    return [self.posX + (self.collideY // 2), self.posY, i]
+                if i.positionX <= self.posX <= (i.positionX + i.width) \
+                        or i.positionX <= (self.posX + self.collideX) <= \
+                        (i.positionX + i.width):
+                    self.posY = i.positionY + i.height
+                    return [self.posX, self.posY - i.height - 3, a]
 
         return [0, 0, None]
 
@@ -180,13 +180,13 @@ class Mario:
     """
 
     def checkIsParallel(self, currplatforms):
-        for i in range(len(currplatforms)):
-            if self.posY >= currplatforms[i].positionY >= (self.posY + self.collideY) or \
-                    self.posY >= (currplatforms[i].positionY + currplatforms[i].height) >= \
+        for i in currplatforms:
+            if self.posY >= i.positionY >= (self.posY + self.collideY) or \
+                    self.posY >= (i.positionY + i.height) >= \
                     (self.posY + self.collideY):
-                if (currplatforms[i].positionX + currplatforms[i].width) <= self.posX <= \
-                        (currplatforms[i].positionX + currplatforms[i].width + 4) or \
-                        currplatforms[i].positionX >= self.posX >= (currplatforms[i].positionX - 4):
+                if (i.positionX + i.width) <= self.posX <= \
+                        (i.positionX + i.width + 4) or \
+                        i.positionX >= self.posX >= (i.positionX - 4):
                     print("working?")
                     return True
 
@@ -219,6 +219,9 @@ class Enemies:
         return self.enemy
 
     def __repr__(self):
+        return self.__str__()
+
+    def __bool__(self):
         return self.__str__()
 
     def movement(self, dimX):
@@ -262,15 +265,15 @@ class Enemies:
                 self.velY = 0
 
     def checkIsOver(self, currplatforms):
-        for i in range(len(currplatforms)):
-            if (currplatforms[i].positionY - 8) <= (self.posY + self.collideY) <= currplatforms[i].positionY:
+        for i in currplatforms:
+            if (i.positionY - 8) <= (self.posY + self.collideY) <= i.positionY:
                 # Then checks if it is also in the right position of the platform
-                if currplatforms[i].positionX <= (self.posX + (self.collideX // 2)) <= (
-                        currplatforms[i].positionX + currplatforms[i].width):
+                if i.positionX <= (self.posX + (self.collideX // 2)) <= (
+                        i.positionX + i.width):
                     # Then we add a bool to pass to the rest of the program that is over
                     # a platform and the characteristics of that platform
                     self.isOver = True
-                    self.currPlat = currplatforms[i]
+                    self.currPlat = i
                     return  # Exit the loop since we found the platform
 
         # If no platform is found, set isOver to False

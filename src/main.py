@@ -62,7 +62,10 @@ class App:
             i.movement(self.dimX)
 
         for i in self.currplatforms:
-            i.aniKick()
+            if i.kickStatus:
+                tempKick = i.aniKick()
+                if tempKick:
+                    self.mario.kickPos = [0, 0, None]
 
         # Exec the functions for the movement
         if pyxel.btnp(pyxel.KEY_W):
@@ -88,7 +91,10 @@ class App:
                   self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
 
         for i in self.currenemies:
-            pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=0)
+            if i == "Turtle":
+                pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=8)
+            elif i == "Crab":
+                pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=11)
 
         pyxel.bltm(0, 0, 0, 0, 0, 240, 200, colkey=8)
 
