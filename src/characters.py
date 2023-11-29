@@ -202,7 +202,8 @@ class Enemies:
         self.collideY = collideY
         self.direction = direction
         self.velY = 0
-        self.mX = 2
+        self.mX = 1
+        self.isDed = False
         self.enemy = enemy
 
         # Status checks
@@ -218,11 +219,8 @@ class Enemies:
     def __str__(self):
         return self.enemy
 
-    def __repr__(self):
-        return self.__str__()
-
-    def __bool__(self):
-        return self.__str__()
+    def __eq__(self, enemy):
+        return enemy == self.enemy
 
     def movement(self, dimX):
         # Automatic movement to the direction set
@@ -266,19 +264,25 @@ class Enemies:
 
     def checkIsOver(self, currplatforms):
         for i in currplatforms:
-            if (i.positionY - 8) <= (self.posY + self.collideY) <= i.positionY:
-                # Then checks if it is also in the right position of the platform
-                if i.positionX <= (self.posX + (self.collideX // 2)) <= (
-                        i.positionX + i.width):
-                    # Then we add a bool to pass to the rest of the program that is over
-                    # a platform and the characteristics of that platform
-                    self.isOver = True
-                    self.currPlat = i
-                    return  # Exit the loop since we found the platform
+            if not self.isDed:
+                if (i.positionY - 8) <= (self.posY + self.collideY) <= i.positionY:
+                    # Then checks if it is also in the right position of the platform
+                    if i.positionX <= (self.posX + (self.collideX // 2)) <= (
+                            i.positionX + i.width):
+                        # Then we add a bool to pass to the rest of the program that is over
+                        # a platform and the characteristics of that platform
+                        self.isOver = True
+                        self.currPlat = i
+                        return  # Exit the loop since we found the platform
 
-        # If no platform is found, set isOver to False
-        self.isOver = False
-        self.currPlat = None
+            # If no platform is found, set isOver to False
+            self.isOver = False
+            self.currPlat = None
+
+    def kickFall(self):
+        self.posY -= 30
+        self.isDed = True
+
 
 
 class Turtle(Enemies):
@@ -305,4 +309,4 @@ class Crab(Enemies):
     def changeStatus(self):
         self.status = "angry"
         self.currentSetFrames = self.movingFramesAngry
-        self.mX = 3
+        self.mX = 2
