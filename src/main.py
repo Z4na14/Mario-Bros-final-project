@@ -10,6 +10,8 @@ import pyxel
 import characters
 import levels
 from os import getcwd
+from time import process_time
+from re import search
 
 
 class App:
@@ -22,7 +24,9 @@ class App:
 
         self.dimX = dimx
         self.dimY = dimy
+        self.time, self.temptime = 0, 0
         pyxel.init(dimx, dimy, fps=30)
+        pyxel.load(f"{directory}/resources/texture.pyxres")
 
         self.mario = mario
         self.screens = screens
@@ -41,10 +45,19 @@ class App:
                 a.posX = self.currpipes[1][0]
             a.posY = self.currpipes[0][1]
 
-        pyxel.load(f"{directory}/resources/texture.pyxres")
+        self.activenemies = [self.currenemies[0]]
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        self.time = search(r'(.*)\.', str(process_time() * 5)).group(0)[:-1]
+        print(self.time)
+
+        if int(self.time):
+            if self.time != self.temptime:
+                self.temptime = self.time
+                if int(self.time) % 2 == 0 and len(self.currenemies) != 0:
+                    self.activenemies.append(self.currenemies.pop())
+
         # Quit game
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
@@ -52,7 +65,7 @@ class App:
         self.mario.checkIsOver(self.currplatforms)
         self.mario.checkMovement(self.dimX, self.currplatforms)
 
-        for i in self.currenemies:
+        for i in self.activenemies:
             i.checkIsOver(self.currplatforms)
             i.movement(self.dimX)
 
@@ -91,7 +104,7 @@ class App:
 
         # TEMPORAL: Change status of crab (Debug)
         elif pyxel.btnp(pyxel.KEY_P):
-            self.currenemies[1].changeStatus()
+            self.activenemies[1].changeStatus()
 
         elif pyxel.btnp(pyxel.KEY_O):
             self.currplatforms[0].kick(20, 45, "block")
@@ -102,7 +115,7 @@ class App:
         pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
                   self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
 
-        for i in self.currenemies:
+        for i in self.activenemies:
             if i == "Turtle":
                 pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=8)
             elif i == "Crab":
@@ -134,6 +147,11 @@ screen1 = levels.Screen(2, [levels.Platform(0, 48, 72, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[0, 30], [230, 30]])
 
-enemies1 = [characters.Turtle("Turtle", 16, 16, 1), characters.Crab("Crab", 16, 16, 0 - 1)]
+enemies1 = [characters.Turtle("Turtle", 16, 16, 1),
+            characters.Turtle("Turtle", 16, 16, 0-1),
+            characters.Turtle("Turtle", 16, 16, 1),
+            characters.Crab("Crab", 16, 16, 0 - 0-1),
+            characters.Crab("Crab", 16, 16, 0 - 1),
+            characters.Crab("Crab", 16, 16, 0 - 0-1)]
 
 App(240, 200, characters.Mario(16, 21), [screen1], [enemies1], getcwd())

@@ -86,7 +86,7 @@ class Mario:
                     self.velY = 0
 
             elif self.isFalling:
-                if self.velY < 8:
+                if self.velY < 15:
                     self.velY += 1
                 self.posY += self.velY
 
@@ -216,7 +216,8 @@ class Mario:
     def dead(self):
         if not self.isDed:
             self.isDed = True
-            self.velY = 8
+            self.isFalling = False
+            self.velY = 10
             self.currframe = self.deadframe
 
 
