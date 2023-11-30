@@ -23,11 +23,13 @@ class Mario:
         self.isFalling = True
         self.isOver = False
         self.currPlat = None
+        self.isDed = False
 
         # Related to animations (All frames are taken from the pyxres file)
         self.runframes = [[16, 3, 16, 21], [32, 3, 16, 21], [48, 3, 16, 21]]
         self.stillframe = [192, 3, 16, 21]
         self.jumpframe = [64, 1, 16, 23]
+        self.deadframe = [112, 1, 16, 20]
         self.currframe = self.stillframe
         # The phase is only used in moving animations
         self.currPhaseFrame = 0
@@ -38,11 +40,11 @@ class Mario:
         :param command: Execute the following keyboard press
         """
         if command == 'up':
-            if self.velY == 0 and not self.isFalling:
+            if self.velY == 0 and not self.isFalling and not self.isDed:
                 self.velY = 10
 
         elif command == 'left':
-            if self.mX == 0:
+            if self.mX == 0 and not self.isDed:
                 self.mX -= 4
                 self.direction = -1
 
@@ -59,7 +61,7 @@ class Mario:
                             self.currPhaseFrame += 1
 
         elif command == 'right':
-            if self.mX == 0:
+            if self.mX == 0 and not self.isDed:
                 self.mX += 4
                 self.direction = 1
 
@@ -73,73 +75,89 @@ class Mario:
                             self.currPhaseFrame += 1
 
     def checkMovement(self, dimX, currplatforms):
-        # Check if the position of the character must be higher
-        if self.velY > 0 and not self.isFalling:
-            self.posY -= self.velY
-            self.velY -= 1
+        # Check if mario is dead and make him fall
+        if self.isDed:
+            if self.velY > 0 and not self.isFalling:
+                self.posY -= self.velY
+                self.velY -= 1
 
-            # Set the frame of the jump
-            self.currframe = deepcopy(self.jumpframe)
-            self.currframe[2] = self.currframe[2] * self.direction
-            self.kickPos = self.checkIsUnder(currplatforms)
+                if self.velY <= 0:
+                    self.isFalling = True
+                    self.velY = 0
 
-            # Mario falls after reaching peak
-            if self.velY <= 0 or self.kickPos != [0, 0, None]:
-                self.isFalling = True
-                self.velY = 0
-
-        # Make the gravity
-        elif self.isFalling:
-            if self.isOver:
-                """
-                If it is over a platform, we set the Y position to be
-                over the platform and change the respective status and mario frame.
-                """
-                self.posY = self.currPlat.positionY - self.collideY
-                self.isFalling = False
-                self.velY = 0
-                self.currframe = self.stillframe
-
-            else:
-                """
-                If not over platform, keep falling until a certain velocity
-                and set mario frames
-                """
-                if self.velY < 7:
+            elif self.isFalling:
+                if self.velY < 8:
                     self.velY += 1
                 self.posY += self.velY
+
+        elif not self.isDed:
+            # Check if the position of the character must be higher
+            if self.velY > 0 and not self.isFalling:
+                self.posY -= self.velY
+                self.velY -= 1
+
+                # Set the frame of the jump
                 self.currframe = deepcopy(self.jumpframe)
                 self.currframe[2] = self.currframe[2] * self.direction
+                self.kickPos = self.checkIsUnder(currplatforms)
 
-        # Check if Mario is still over a platform and make him fall
-        elif not self.isFalling:
-            if not self.isOver:
-                self.isFalling = True
-                self.velY = 0
+                # Mario falls after reaching peak
+                if self.velY <= 0 or self.kickPos != [0, 0, None]:
+                    self.isFalling = True
+                    self.velY = 0
 
-        # Check for horizontal movement
-        if self.mX != 0:
-            if not self.checkIsParallel(currplatforms):
-                self.posX += self.mX
-                self.mX = 0
+            # Make the gravity
+            elif self.isFalling:
+                if self.isOver:
+                    """
+                    If it is over a platform, we set the Y position to be
+                    over the platform and change the respective status and mario frame.
+                    """
+                    self.posY = self.currPlat.positionY - self.collideY
+                    self.isFalling = False
+                    self.velY = 0
+                    self.currframe = self.stillframe
 
-                """
-                TO DO: Mario falls when standing right
-                in the corner.
-                """
-                # Check if character leaves screen
-                if self.posX < 0:
-                    self.posX = dimX
-                    self.posY -= 2
+                else:
+                    """
+                    If not over platform, keep falling until a certain velocity
+                    and set mario frames
+                    """
+                    if self.velY < 7:
+                        self.velY += 1
+                    self.posY += self.velY
+                    self.currframe = deepcopy(self.jumpframe)
+                    self.currframe[2] = self.currframe[2] * self.direction
 
-                elif self.posX > dimX:
-                    self.posX = 0
-                    self.posY -= 2
+            # Check if Mario is still over a platform and make him fall
+            elif not self.isFalling:
+                if not self.isOver:
+                    self.isFalling = True
+                    self.velY = 0
 
-        # Set the still frame when mario is not moving
-        elif self.mX == 0 and self.isOver:
-            self.currframe = deepcopy(self.stillframe)
-            self.currframe[2] = self.currframe[2] * self.direction
+            # Check for horizontal movement
+            if self.mX != 0:
+                if not self.checkIsParallel(currplatforms):
+                    self.posX += self.mX
+                    self.mX = 0
+
+                    """
+                    TO DO: Mario falls when standing right
+                    in the corner.
+                    """
+                    # Check if character leaves screen
+                    if self.posX < 0:
+                        self.posX = dimX
+                        self.posY -= 2
+
+                    elif self.posX > dimX:
+                        self.posX = 0
+                        self.posY -= 2
+
+            # Set the still frame when mario is not moving
+            elif self.mX == 0 and self.isOver:
+                self.currframe = deepcopy(self.stillframe)
+                self.currframe[2] = self.currframe[2] * self.direction
 
     def checkIsOver(self, currplatforms):
         # Loop that checks whether the character is over a platform or not
@@ -189,6 +207,17 @@ class Mario:
                     return True
 
         return False
+
+    def checkEnemy(self, posXenemy, posYenemy, collideXenemy, collideYenemy):
+        if (posYenemy - 2) <= self.posY + self.collideY <= (posYenemy + collideYenemy + 2):
+            if (posXenemy - 3) <= self.posX <= (posXenemy + collideXenemy + 3):
+                return True
+
+    def dead(self):
+        if not self.isDed:
+            self.isDed = True
+            self.velY = 8
+            self.currframe = self.deadframe
 
 
 class Enemies:

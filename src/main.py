@@ -66,6 +66,13 @@ class App:
                                                                self.mario.kickPos[1],
                                                                "block")
 
+            if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
+                if not i.isFlipped:
+                    self.mario.dead()
+
+                elif i.isFlipped:
+                    i.kickFall("fall")
+
         for i in self.currplatforms:
             if i.kickStatus:
                 tempKick = i.aniKick()
