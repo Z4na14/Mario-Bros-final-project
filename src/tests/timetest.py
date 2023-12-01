@@ -1,6 +1,6 @@
-from time import process_time
+import time
 from re import search
 
 while True:
-    print(str(process_time()))
-    print(search(r"(.*)\.", str(process_time())).group(0))
+    print(str(time.process_time()), time.time())
+    print(search(r"(.*)\.", str(time.process_time())).group(0))

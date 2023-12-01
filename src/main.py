@@ -10,7 +10,7 @@ import pyxel
 import characters
 import levels
 from os import getcwd
-from time import process_time
+from time import time
 from re import search
 
 
@@ -24,7 +24,10 @@ class App:
 
         self.dimX = dimx
         self.dimY = dimy
-        self.time, self.temptime = 0, 0
+        # We need the initial time, the count time, and a temporal time to check changes
+        # The program executes too fast and on time event, it executes them too fast
+        self.initime, self.currtime, self.temptime, self.parsedtime = time(), 0, 0, 0
+        self.ingame = False
         pyxel.init(dimx, dimy, fps=30)
         pyxel.load(f"{directory}/resources/texture.pyxres")
 
@@ -32,126 +35,156 @@ class App:
         self.screens = screens
         self.enemies = enemies
 
+        # We set in memory the currently used objects
         self.currlv = 0
         self.currplatforms = self.screens[self.currlv].platforms
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
-
-        # Set the spawn point for all the enemies at the pipes
-        for i, a in enumerate(self.currenemies):
-            if i % 2 == 0:
-                a.posX = self.currpipes[0][0]
-            elif i % 2 != 0:
-                a.posX = self.currpipes[1][0]
-            a.posY = self.currpipes[0][1]
-
+        # And initialize the first enemy
         self.activenemies = [self.currenemies[0]]
+
+        # Finally we run the program
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        self.time = search(r'(.*)\.', str(process_time() * 5)).group(0)[:-1]
-        print(self.time)
+        if not self.ingame:
+            if pyxel.btnp(pyxel.KEY_SPACE):
+                self.ingame = True
 
-        if int(self.time):
-            if self.time != self.temptime:
-                self.temptime = self.time
-                if int(self.time) % 2 == 0 and len(self.currenemies) != 0:
-                    self.activenemies.append(self.currenemies.pop())
+        elif self.ingame:
+            self.parseTime()
 
-        # Quit game
-        if pyxel.btnp(pyxel.KEY_Q):
-            pyxel.quit()
+            self.mario.checkIsOver(self.currplatforms)
+            self.mario.checkMovement(self.dimX, self.currplatforms)
 
-        self.mario.checkIsOver(self.currplatforms)
-        self.mario.checkMovement(self.dimX, self.currplatforms)
+            for i in self.activenemies:
+                self.enemiesCheck(i)
 
-        for i in self.activenemies:
-            i.checkIsOver(self.currplatforms)
-            i.movement(self.dimX)
+            for i in self.currplatforms:
+                if i.kickStatus:
+                    tempKick = i.aniKick()
+                    if tempKick:
+                        self.mario.kickPos = [0, 0, None]
 
-            if self.mario.kickPos != [0, 0, None]:
-                if (self.mario.kickPos[1]-13) <= i.posY <= (self.mario.kickPos[1] - 5):
-                    if self.mario.kickPos[0]-5 <= (i.posX + i.collideX // 2) <= \
-                            (self.mario.kickPos[0] + 16):
-                        i.kickFall("turn")
+            # Quit game
+            if pyxel.btnp(pyxel.KEY_Q):
+                pyxel.quit()
 
-                self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
-                                                               self.mario.kickPos[1],
-                                                               "block")
+            # Exec the functions for the movement
+            if pyxel.btnp(pyxel.KEY_W):
+                self.mario.movement('up')
 
-            if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
-                if not i.isFlipped:
-                    self.mario.dead()
+            elif pyxel.btn(pyxel.KEY_A):
+                self.mario.movement('left')
 
-                elif i.isFlipped:
-                    i.kickFall("fall")
-
-        for i in self.currplatforms:
-            if i.kickStatus:
-                tempKick = i.aniKick()
-                if tempKick:
-                    self.mario.kickPos = [0, 0, None]
-
-        # Exec the functions for the movement
-        if pyxel.btnp(pyxel.KEY_W):
-            self.mario.movement('up')
-
-        elif pyxel.btn(pyxel.KEY_A):
-            self.mario.movement('left')
-
-        elif pyxel.btn(pyxel.KEY_D):
-            self.mario.movement('right')
-
-        # TEMPORAL: Change status of crab (Debug)
-        elif pyxel.btnp(pyxel.KEY_P):
-            self.activenemies[1].changeStatus()
-
-        elif pyxel.btnp(pyxel.KEY_O):
-            self.currplatforms[0].kick(20, 45, "block")
+            elif pyxel.btn(pyxel.KEY_D):
+                self.mario.movement('right')
 
     def draw(self):
         pyxel.cls(0)
 
-        pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
-                  self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
+        if self.ingame:
+            pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
+                      self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
 
-        for i in self.activenemies:
-            if i == "Turtle":
-                pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=8)
-            elif i == "Crab":
-                pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=11)
+            for i in self.activenemies:
+                if i == "Turtle":
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=8)
+                elif i == "Crab":
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=11)
 
-        pyxel.bltm(0, 0, 0, 0, 0, 240, 200, colkey=8)
+            pyxel.bltm(0, 0, self.currlv, 0, 0, 240, 200, colkey=8)
 
-        for i in self.currplatforms:
-            if i.kickStatus:
-                pyxel.blt(i.kickX, i.kickY, 0, i.framesPlatform[i.currPhaseFrame][0],
-                          i.framesPlatform[i.currPhaseFrame][1], i.framesPlatform[i.currPhaseFrame][2],
-                          i.framesPlatform[i.currPhaseFrame][3], colkey=8)
-        """
-        for i in range(len(self.currplatforms)):
-            pyxel.rect(i.positionX, i.positionY,
-                       i.width, i.height, 3)
-        
-        for i in range(len(self.currpipes)):
-            pyxel.rect(self.currpipes[i][0], self.currpipes[i][1], 10, 10, 1)
-        """
+            for i in self.currplatforms:
+                if i.kickStatus:
+                    pyxel.blt(i.kickX, i.kickY, 0, i.framesPlatform[i.currPhaseFrame][0],
+                              i.framesPlatform[i.currPhaseFrame][1], i.framesPlatform[i.currPhaseFrame][2],
+                              i.framesPlatform[i.currPhaseFrame][3], colkey=8)
+            """
+            for i in self.currplatforms:
+                pyxel.rect(i.positionX, i.positionY,
+                           i.width, i.height, 3)
+            """
+            """
+            for i in range(len(self.currpipes)):
+                pyxel.rect(self.currpipes[i][0], self.currpipes[i][1], 10, 10, 1)
+            """
+        elif not self.ingame:
+            pyxel.bltm(0, 0, 3, 0, 0, 240, 200, colkey=8)
+
+    # From here are just functions to make more clear the update one
+    def parseTime(self):
+        self.parsedtime = search(r'(.*)\.', str(time() - self.initime)).group(0)[:-1]
+        if int(self.parsedtime):  # Is a check for the first frame
+            if self.parsedtime != self.temptime:
+                self.temptime = self.parsedtime
+                if int(self.parsedtime) % 2 == 0 and len(self.currenemies) != 0:
+                    self.activenemies.append(self.currenemies.pop())
+
+    def enemiesCheck(self, i):
+        i.checkIsOver(self.currplatforms)
+        i.movement(self.dimX)
+
+        if self.mario.kickPos != [0, 0, None]:
+            if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
+                if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
+                        (self.mario.kickPos[0] + 16):
+                    i.kickFall("turn")
+
+            self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
+                                                           self.mario.kickPos[1],
+                                                           "block")
+
+        if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
+            if not i.isFlipped:
+                self.mario.dead()
+
+            elif i.isFlipped:
+                i.kickFall("fall")
+
+    def changeLv(self):
+        self.currlv += 1
+        self.currplatforms = self.screens[self.currlv].platforms
+        self.currenemies = self.enemies[self.currlv]
+        self.currpipes = self.screens[self.currlv].pipes
+
+        try:
+            for i, a in enumerate(self.currenemies):
+                if i % 2 == 0:
+                    a.posX = self.currpipes[0][0]
+                elif i % 2 != 0:
+                    a.posX = self.currpipes[1][0]
+                a.posY = self.currpipes[0][1]
+        except IndexError:
+            for a in self.currenemies:
+                a.posX = self.currpipes[0][0]
+                a.posY = self.currpipes[0][1]
+
+        self.activenemies = [self.currenemies[0]]
 
 
-# On top of the measures of the platforms, we need to add the lenght of mario (function)
-screen1 = levels.Screen(2, [levels.Platform(0, 48, 72, 8),
+screen1 = levels.Screen(1, [levels.Platform(0, 48, 72, 8),
                             levels.Platform(168, 48, 72, 8),
                             levels.Platform(48, 96, 144, 8),
                             levels.Platform(0, 144, 72, 8),
                             levels.Platform(168, 144, 72, 8),
                             levels.Platform(0, 192, 240, 8)],
-                        [[0, 30], [230, 30]])
+                        [[0, 20], [220, 20]])
+
+screen2 = levels.Screen(2, [levels.Platform(0, 48, 136, 8),
+                            levels.Platform(192, 48, 48, 8),
+                            levels.Platform(0, 96, 88, 8),
+                            levels.Platform(152, 96, 88, 8),
+                            levels.Platform(0, 144, 48, 8),
+                            levels.Platform(104, 144, 136, 8),
+                            levels.Platform(0, 192, 240, 8)],
+                        [[0, 20], [220, 20]])
 
 enemies1 = [characters.Turtle("Turtle", 16, 16, 1),
-            characters.Turtle("Turtle", 16, 16, 0-1),
+            characters.Turtle("Turtle", 16, 16, 0 - 1),
             characters.Turtle("Turtle", 16, 16, 1),
-            characters.Crab("Crab", 16, 16, 0 - 0-1),
             characters.Crab("Crab", 16, 16, 0 - 1),
-            characters.Crab("Crab", 16, 16, 0 - 0-1)]
+            characters.Crab("Crab", 16, 16, 0 - 1),
+            characters.Crab("Crab", 16, 16, 0 - 1)]
 
-App(240, 200, characters.Mario(16, 21), [screen1], [enemies1], getcwd())
+App(240, 200, characters.Mario(16, 21), [screen1, screen2], [enemies1], getcwd())

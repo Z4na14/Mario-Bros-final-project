@@ -1,5 +1,8 @@
 from copy import deepcopy
 import pyxel
+"""
+Hhhmmmm, spaguetti and lots of variables :D
+"""
 
 
 class Mario:
@@ -163,7 +166,8 @@ class Mario:
         # Loop that checks whether the character is over a platform or not
         # First looks if the character is parallel to a platform
         for i in currplatforms:
-            if (i.positionY - 7) <= (self.posY + self.collideY) <= i.positionY:
+            # Set to check under the platforms, so it sticks more smoothly
+            if (i.positionY - 5) <= (self.posY + self.collideY) <= (i.positionY + 2):
                 # Then checks if it is also in the right position of the platform
                 if i.positionX <= self.posX <= (i.positionX + i.width) \
                         or i.positionX <= (self.posX + self.collideX) <= \
@@ -278,6 +282,9 @@ class Enemies:
 
         elif not self.isDed:
             # Check if character leaves screen
+            """
+            NEED IMPROVEMENT XD, bro is like bonnie, he flots, he god
+            """
             if self.posX < 0:
                 self.posX = dimX
                 self.posY -= 2
