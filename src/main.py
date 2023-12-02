@@ -50,6 +50,7 @@ class App:
         if not self.ingame:
             if pyxel.btnp(pyxel.KEY_SPACE):
                 self.ingame = True
+                self.enemiesCheck(self.activenemies[0])
 
         elif self.ingame:
             self.parseTime()
