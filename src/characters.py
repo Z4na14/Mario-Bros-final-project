@@ -1,5 +1,6 @@
 from copy import deepcopy
 import pyxel
+
 """
 Hhhmmmm, spaguetti and lots of variables :D
 """
@@ -26,7 +27,7 @@ class Mario:
         self.isFalling = True
         self.isOver = False
         self.currPlat = None
-        self.isDed = False
+        self.isDed, self.timeDed = False, -1
 
         # Related to animations (All frames are taken from the pyxres file)
         self.runframes = [[16, 3, 16, 21], [32, 3, 16, 21], [48, 3, 16, 21]]
@@ -200,6 +201,7 @@ class Mario:
     NOT WORKING
     TO DO: Repair the frontal collision
     """
+
     def checkIsParallel(self, currplatforms):
         for i in currplatforms:
             if self.posY >= i.positionY >= (self.posY + self.collideY) or \
@@ -213,13 +215,14 @@ class Mario:
         return False
 
     def checkEnemy(self, posXenemy, posYenemy, collideXenemy, collideYenemy):
-        if (posYenemy - 2) <= self.posY + self.collideY <= (posYenemy + collideYenemy + 2):
-            if (posXenemy - 3) <= self.posX <= (posXenemy + collideXenemy + 3):
+        if (posYenemy - 4) <= self.posY + self.collideY <= (posYenemy + collideYenemy):
+            if (posXenemy) <= self.posX <= (posXenemy + collideXenemy):
                 return True
 
-    def dead(self):
+    def dead(self, time):
         if not self.isDed:
             self.isDed = True
+            self.timeDed = time
             self.isFalling = False
             self.velY = 10
             self.currframe = self.deadframe
@@ -235,7 +238,7 @@ class Enemies:
         self.direction = direction
         self.velY = 0
         self.mX = 1
-        self.isDed = False
+        self.isDed, self.timeDed = False, -1
         self.isFlipped = False
         self.enemy = enemy
 
@@ -256,7 +259,7 @@ class Enemies:
         return enemy == self.enemy
 
     def movement(self, dimX):
-        # Automatic movement to the direction set
+        # Automatic movement to the d irection set
         self.posX += self.mX * self.direction
 
         if self.isDed and self.isFlipped:
@@ -339,7 +342,8 @@ class Enemies:
     """
     TO DO: Finish mario check when hes over the flipped enemies to kill them
     """
-    def kickFall(self, state):
+
+    def kickFall(self, state, time=-1):
         if state == "turn":
             self.isFlipped = True
             self.mX = 0
@@ -353,6 +357,7 @@ class Enemies:
             self.mX = 1
 
             self.isDed = True
+            self.timeDed = time
 
 
 class Turtle(Enemies):

@@ -50,20 +50,24 @@ class App:
         if not self.ingame:
             if pyxel.btnp(pyxel.KEY_SPACE):
                 self.ingame = True
+                self.enemiesCheck(self.activenemies[0])
 
         elif self.ingame:
+            if len(self.currenemies) == 0 and len(self.activenemies) == 0:
+                self.changeLv()
+
             self.parseTime()
 
             self.mario.checkIsOver(self.currplatforms)
             self.mario.checkMovement(self.dimX, self.currplatforms)
 
-            for i in self.activenemies:
-                self.enemiesCheck(i)
+            for a, i in enumerate(self.activenemies):
+                if self.enemiesCheck(i):
+                    self.activenemies.pop(a)
 
             for i in self.currplatforms:
                 if i.kickStatus:
-                    tempKick = i.aniKick()
-                    if tempKick:
+                    if i.aniKick():
                         self.mario.kickPos = [0, 0, None]
 
             # Quit game
@@ -111,6 +115,7 @@ class App:
             """
         elif not self.ingame:
             pyxel.bltm(0, 0, 3, 0, 0, 240, 200, colkey=8)
+            pyxel.text(80, 115, "Press SPACE to begin", 9)
 
     # From here are just functions to make more clear the update one
     def parseTime(self):
@@ -118,29 +123,36 @@ class App:
         if int(self.parsedtime):  # Is a check for the first frame
             if self.parsedtime != self.temptime:
                 self.temptime = self.parsedtime
-                if int(self.parsedtime) % 2 == 0 and len(self.currenemies) != 0:
+                if int(self.parsedtime) % 3 == 0 and len(self.currenemies) != 0:
                     self.activenemies.append(self.currenemies.pop())
 
     def enemiesCheck(self, i):
-        i.checkIsOver(self.currplatforms)
-        i.movement(self.dimX)
+        if i.isDed:
+            if (int(self.parsedtime) - int(i.timeDed)) > 3:
+                return True
 
-        if self.mario.kickPos != [0, 0, None]:
-            if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
-                if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
-                        (self.mario.kickPos[0] + 16):
-                    i.kickFall("turn")
+        elif not i.isDed:
+            i.checkIsOver(self.currplatforms)
+            i.movement(self.dimX)
 
-            self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
-                                                           self.mario.kickPos[1],
-                                                           "block")
+            if self.mario.kickPos != [0, 0, None]:
+                if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
+                    if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
+                            (self.mario.kickPos[0] + 16):
+                        i.kickFall("turn")
 
-        if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
-            if not i.isFlipped:
-                self.mario.dead()
+                self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
+                                                               self.mario.kickPos[1],
+                                                               "block")
 
-            elif i.isFlipped:
-                i.kickFall("fall")
+            if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
+                if not i.isFlipped:
+                    self.mario.dead(self.parsedtime)
+
+                elif i.isFlipped:
+                    i.kickFall("fall", self.parsedtime)
+
+            return False
 
     def changeLv(self):
         self.currlv += 1
@@ -187,4 +199,11 @@ enemies1 = [characters.Turtle("Turtle", 16, 16, 1),
             characters.Crab("Crab", 16, 16, 0 - 1),
             characters.Crab("Crab", 16, 16, 0 - 1)]
 
-App(240, 200, characters.Mario(16, 21), [screen1, screen2], [enemies1], getcwd())
+enemies2 = [characters.Turtle("Turtle", 16, 16, 1),
+            characters.Turtle("Turtle", 16, 16, 0 - 1),
+            characters.Turtle("Turtle", 16, 16, 1),
+            characters.Crab("Crab", 16, 16, 0 - 1),
+            characters.Crab("Crab", 16, 16, 0 - 1),
+            characters.Crab("Crab", 16, 16, 0 - 1)]
+
+App(240, 200, characters.Mario(16, 21), [screen1, screen2], [enemies1, enemies2], getcwd())
