@@ -10,7 +10,7 @@ import pyxel
 import characters
 import levels
 from os import getcwd
-from time import time
+from time import time, sleep
 from re import search
 
 
@@ -159,6 +159,8 @@ class App:
         self.currplatforms = self.screens[self.currlv].platforms
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
+
+        sleep(2)
 
         try:
             for i, a in enumerate(self.currenemies):

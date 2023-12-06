@@ -197,26 +197,22 @@ class Mario:
 
         return [0, 0, None]
 
-    """
-    NOT WORKING
-    TO DO: Repair the frontal collision
-    """
-
     def checkIsParallel(self, currplatforms):
         for i in currplatforms:
-            if self.posY >= i.positionY >= (self.posY + self.collideY) or \
-                    self.posY >= (i.positionY + i.height) >= \
+            if self.posY < i.positionY < (self.posY + self.collideY) or \
+                    self.posY < (i.positionY + i.height) < \
                     (self.posY + self.collideY):
-                if (i.positionX + i.width) <= self.posX <= \
-                        (i.positionX + i.width + 4) or \
-                        i.positionX >= self.posX >= (i.positionX - 4):
+                if (i.positionX + i.width - 2) <= self.posX <= \
+                        (i.positionX + i.width + 2) or \
+                        (i.positionX + 2) >= (self.posX + self.collideX) >= (i.positionX - 2):
                     return True
 
         return False
 
     def checkEnemy(self, posXenemy, posYenemy, collideXenemy, collideYenemy):
-        if (posYenemy - 4) <= self.posY + self.collideY <= (posYenemy + collideYenemy):
-            if (posXenemy) <= self.posX <= (posXenemy + collideXenemy):
+        if posYenemy <= self.posY + self.collideY <= (posYenemy + collideYenemy):
+            if posXenemy <= self.posX <= (posXenemy + collideXenemy) or posXenemy <= \
+                    (self.posX + self.collideX) <= (posXenemy + collideXenemy):
                 return True
 
     def dead(self, time):

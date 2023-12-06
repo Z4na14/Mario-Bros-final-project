@@ -19,8 +19,7 @@ class Platform:
         self.kickY = 0
         self.currPhaseFrame = 0
         self.recover = False
-        self.f
-        ramesPlatform = None
+        self.framesPlatform = None
 
     def kick(self, posX, posY, block: str):
         if not self.kickStatus:
