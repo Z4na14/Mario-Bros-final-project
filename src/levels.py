@@ -14,10 +14,12 @@ class Platform:
         self.aniTiles = []
         self.aniFrozen = []
 
-        self.kickStatus = False
         self.kickX = 0
         self.kickY = 0
         self.currPhaseFrame = 0
+        self.clip = 0
+
+        self.kickStatus = False
         self.recover = False
         self.framesPlatform = None
 
@@ -41,6 +43,21 @@ class Platform:
                 case "frozen":
                     self.framesPlatform = self.aniFrozen
 
+            if posX > (self.positionX + (self.width // 2)):
+                if (posX + 23) > (self.positionX + self.width):
+                    for i in self.framesPlatform:
+                        i[2] -= ((posX + 23) - (self.positionX + self.width))
+
+            elif posX < (self.positionX + (self.width // 2)):
+                if (posX - 23) < self.positionX:
+                    for i in self.framesPlatform:
+                        tempClip = self.positionX - (posX - 23)
+                        i[0] += tempClip
+                        i[2] -= tempClip
+
+            elif posX > (self.positionX + (self.width // 2)):
+                self.clip = 0
+
             self.currPhaseFrame = 0
             self.kickStatus = True
 
@@ -59,6 +76,7 @@ class Platform:
                 self.recover = False
                 self.kickStatus = False
                 self.currPhaseFrame = -1
+                self.clip = 0
                 return True
 
             elif self.currPhaseFrame != 0:
