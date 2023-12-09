@@ -151,6 +151,9 @@ class Crab(Enemies):
 
         self.currentSetFrames = self.movingFramesNormal
 
+        # TEMPORAL
+        self.currframe = self.currentSetFrames[0]
+
     def changeStatus(self):
         self.status = "angry"
         self.currentSetFrames = self.movingFramesAngry
@@ -167,8 +170,9 @@ class Fly(Enemies):
         self.currentSetFrames = self.movingFrames
         self.jumping = False
 
+    """
     def movement(self, dimX, platforms):
-        if pyxel.frame_count // 7 and self.velY == 0:
+        if pyxel.frame_count // 7 and not self.jumping:
             self.velY = 8
             self.jumping = True
 
@@ -196,6 +200,7 @@ class Fly(Enemies):
                     if self.velY < 8:
                         self.velY += 1
                     self.posY += self.velY
+    """
 
     def checkIsUnder(self, currplatform):
         for a, i in enumerate(currplatform):

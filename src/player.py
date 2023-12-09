@@ -78,21 +78,28 @@ class Mario:
                         elif self.currPhaseFrame != 2:
                             self.currPhaseFrame += 1
 
-    def checkMovement(self, dimX, currplatforms):
+    def checkMovement(self, dimX, currplatforms, time):
         # Check if mario is dead and make him fall
         if self.isDed:
-            if self.velY > 0 and not self.isFalling:
-                self.posY -= self.velY
-                self.velY -= 1
+            if int(time) - int(self.timeDed) >= 3:
+                self.isDed = False
+                self.posX = 110
+                self.posY = 170
 
-                if self.velY <= 0:
-                    self.isFalling = True
-                    self.velY = 0
+            else:
 
-            elif self.isFalling:
-                if self.velY < 15:
-                    self.velY += 1
-                self.posY += self.velY
+                if self.velY > 0 and not self.isFalling:
+                    self.posY -= self.velY
+                    self.velY -= 1
+
+                    if self.velY <= 0:
+                        self.isFalling = True
+                        self.velY = 0
+
+                elif self.isFalling:
+                    if self.velY < 15:
+                        self.velY += 1
+                    self.posY += self.velY
 
         elif not self.isDed:
             # Check if the position of the character must be higher
@@ -215,10 +222,13 @@ class Mario:
                     (self.posX + self.collideX) <= (posXenemy + collideXenemy):
                 return True
 
-    def dead(self, time):
+    def dead(self, time, lifes):
         if not self.isDed:
             self.isDed = True
             self.timeDed = time
             self.isFalling = False
             self.velY = 10
             self.currframe = self.deadframe
+
+            if lifes < 0:
+                pyxel.quit()

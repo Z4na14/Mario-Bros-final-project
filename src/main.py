@@ -14,10 +14,11 @@ import levels
 import player
 import pyxel
 import enemies
+import scoreboard
 
 
 class App:
-    def __init__(self, dimx, dimy, mario: object, screens: list, enemies: list, directory):
+    def __init__(self, dimx, dimy, mario: object, lifes: object, screens: list, enemies: list, directory):
         """
         :param dimx: Dimensions of the window (x)
         :param dimy: Dimensions of the window (y)
@@ -38,9 +39,10 @@ class App:
         self.mario = mario
         self.screens = screens
         self.enemies = enemies
+        self.lifes = lifes
 
         # We set in memory the currently used objects in the level
-        self.currlv = 0
+        self.currlv, self.lvType = 0, "block"
         self.currplatforms = self.screens[self.currlv].platforms
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
@@ -56,7 +58,7 @@ class App:
                 # But if its odd, we put him in the right
                 elif i % 2 != 0:
                     a.posX = self.currpipes[1][0]
-                    a.direction = 0-1
+                    a.direction = 0 - 1
 
                 # And change the height for all of them
                 a.posY = self.currpipes[0][1]
@@ -93,7 +95,7 @@ class App:
 
             # Call for the routine of mario
             self.mario.checkIsOver(self.currplatforms)
-            self.mario.checkMovement(self.dimX, self.currplatforms)
+            self.mario.checkMovement(self.dimX, self.currplatforms, self.parsedtime)
 
             # Call for the routine of the enemies
             for a, i in enumerate(self.activenemies):
@@ -126,14 +128,18 @@ class App:
         pyxel.cls(0)
 
         if self.ingame:
+            self.lifes.draw()
+
             # Enemies animation
             for i in self.activenemies:
                 if i == "Turtle":
-                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=8)
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
+                              colkey=8)
                 elif i == "Crab":
-                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=11)
-                #elif i == "Fly":
-                #    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=0)
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
+                              colkey=11)
+                elif i == "Fly":
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3], colkey=0)
 
             pyxel.bltm(0, 0, self.currlv, 0, 0, 240, 200, colkey=8)
 
@@ -147,6 +153,7 @@ class App:
             # Mario's animation
             pyxel.blt(self.mario.posX, self.mario.posY, 0, self.mario.currframe[0],
                       self.mario.currframe[1], self.mario.currframe[2], self.mario.currframe[3], colkey=0)
+
             """
             for i in self.currplatforms:
                 pyxel.rect(i.positionX, i.positionY,
@@ -187,21 +194,22 @@ class App:
                 i.movement(self.dimX)
 
             elif i == "Fly":
-                i.movement(self.dimX, self.currplatforms)
+                # i.movement(self.dimX, self.currplatforms)
+                i.movement(self.dimX)
 
             if self.mario.kickPos != [0, 0, None]:
+                self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos,
+                                                               self.lvType)
+
                 if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
                     if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
                             (self.mario.kickPos[0] + 16):
                         i.kickFall("turn")
 
-                self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos[0],
-                                                               self.mario.kickPos[1],
-                                                               "block")
-
             if self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
-                if not i.isFlipped:
-                    self.mario.dead(self.parsedtime)
+                if not i.isFlipped and not self.mario.isDed:
+                    self.lifes.count -= 1
+                    self.mario.dead(self.parsedtime, self.lifes.count)
 
                 elif i.isFlipped:
                     i.kickFall("fall", self.parsedtime)
@@ -214,8 +222,6 @@ class App:
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
 
-        sleep(2)
-
         try:
             for i, a in enumerate(self.currenemies):
                 if i % 2 == 0:
@@ -223,47 +229,60 @@ class App:
                     a.direction = 1
                 elif i % 2 != 0:
                     a.posX = self.currpipes[1][0]
-                    a.direction = 0-1
+                    a.direction = 0 - 1
                 a.posY = self.currpipes[0][1]
         except IndexError:
             for a in self.currenemies:
                 a.posX = self.currpipes[0][0]
                 a.posY = self.currpipes[0][1]
 
+        match self.currlv:
+            case 1:
+                self.lvType = "tiles"
+
+            case 2:
+                self.lvType = "pipeyellow"
+
+            case 3:
+                self.lvType = "pipegreen"
+
+        sleep(2)
+
         self.activenemies = [self.currenemies[0]]
         self.activenemies[0].isSpawning = True
 
 
-screen1 = levels.Screen(1, [levels.Platform(0, 48, 72, 8),
-                            levels.Platform(168, 48, 72, 8),
-                            levels.Platform(48, 96, 144, 8),
-                            levels.Platform(0, 144, 72, 8),
-                            levels.Platform(168, 144, 72, 8),
+screen1 = levels.Screen(1, [levels.Platform(2, 48, 68, 8),
+                            levels.Platform(170, 48, 68, 8),
+                            levels.Platform(50, 96, 140, 8),
+                            levels.Platform(2, 144, 68, 8),
+                            levels.Platform(170, 144, 68, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[10, 20], [230, 20], [0, 180], [240, 180]])
 
-screen2 = levels.Screen(2, [levels.Platform(0, 48, 136, 8),
-                            levels.Platform(192, 48, 48, 8),
-                            levels.Platform(0, 96, 88, 8),
-                            levels.Platform(152, 96, 88, 8),
-                            levels.Platform(0, 144, 48, 8),
-                            levels.Platform(104, 144, 136, 8),
+screen2 = levels.Screen(2, [levels.Platform(2, 48, 140, 8),
+                            levels.Platform(178, 48, 60, 8),
+                            levels.Platform(2, 96, 100, 8),
+                            levels.Platform(138, 96, 100, 8),
+                            levels.Platform(2, 144, 60, 8),
+                            levels.Platform(98, 144, 140, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[20, 20], [220, 180]])
 
 enemies1 = [enemies.Fly("Fly", 16, 16)]
-#enemies1 = [enemies.Turtle("Turtle", 16, 16),
+# enemies1 = [enemies.Turtle("Turtle", 16, 16),
 #            enemies.Turtle("Turtle", 16, 16),
 #            enemies.Turtle("Turtle", 16, 16),
 #            enemies.Crab("Crab", 16, 16),
 #            enemies.Crab("Crab", 16, 16),
 #            enemies.Crab("Crab", 16, 16)]
 
-enemies2 = [enemies.Turtle("Turtle", 16, 16,),
-            enemies.Turtle("Turtle", 16, 16,),
-            enemies.Turtle("Turtle", 16, 16,),
-            enemies.Crab("Crab", 16, 16,),
-            enemies.Crab("Crab", 16, 16,),
-            enemies.Crab("Crab", 16, 16,)]
+enemies2 = [enemies.Fly("Fly", 16, 16)]
+#enemies2 = [enemies.Turtle("Turtle", 16, 16, ),
+#            enemies.Turtle("Turtle", 16, 16, ),
+#            enemies.Turtle("Turtle", 16, 16, ),
+#            enemies.Crab("Crab", 16, 16, ),
+#            enemies.Crab("Crab", 16, 16, ),
+#            enemies.Crab("Crab", 16, 16, )]
 
-App(240, 200, player.Mario(16, 21), [screen1, screen2], [enemies1, enemies2], getcwd())
+App(240, 200, player.Mario(16, 21), scoreboard.Lifes(10, 2), [screen1, screen2], [enemies1, enemies2], getcwd())

@@ -1,4 +1,5 @@
 import pyxel
+from copy import deepcopy
 
 
 class Platform:
@@ -8,58 +9,60 @@ class Platform:
         self.width = width
         self.height = height
 
-        self.aniBlock = [[0, 245, 23, 15], [24, 243, 23, 17], [48, 241, 23, 19]]
-        self.aniPipeYellow = []
-        self.aniPipeGreen = []
-        self.aniTiles = []
-        self.aniFrozen = []
+        self.aniBlock = [[0, 245, 23, 12], [24, 243, 23, 14], [48, 241, 23, 16]]
+        self.aniPipeYellow = [[72, 245, 23, 12], [96, 243, 23, 14], [120, 241, 23, 16]]
+        self.aniPipeGreen = [[144, 245, 23, 12], [168, 243, 23, 14], [192, 241, 23, 16]]
+        self.aniTiles = [[32, 230, 23, 12], [56, 227, 23, 14], [80, 225, 23, 16]]
 
         self.kickX = 0
         self.kickY = 0
         self.currPhaseFrame = 0
-        self.clip = 0
+        self.numPlat = 0
 
         self.kickStatus = False
         self.recover = False
         self.framesPlatform = None
 
-    def kick(self, posX, posY, block: str):
+    def kick(self, kickPos, block: str):
         if not self.kickStatus:
-            self.kickX = posX
-            self.kickY = posY
+            self.kickX = kickPos[0]
+            self.kickY = kickPos[1]
+            self.numPlat = kickPos[2]
+
             match block:
                 case "block":
-                    self.framesPlatform = self.aniBlock
+                    self.framesPlatform = deepcopy(self.aniBlock)
 
                 case "pipeyellow":
-                    self.framesPlatform = self.aniPipeYellow
+                    self.framesPlatform = deepcopy(self.aniPipeYellow)
 
                 case "pipegreen":
-                    self.framesPlatform = self.aniPipeGreen
+                    self.framesPlatform = deepcopy(self.aniPipeGreen)
 
                 case "tiles":
-                    self.framesPlatform = self.aniTiles
+                    self.framesPlatform = deepcopy(self.aniTiles)
 
-                case "frozen":
-                    self.framesPlatform = self.aniFrozen
-
-            if posX > (self.positionX + (self.width // 2)):
-                if (posX + 23) > (self.positionX + self.width):
+            if self.kickX > (self.positionX + (self.width // 2)):
+                if (self.kickX + 20) > (self.positionX + self.width):
                     for i in self.framesPlatform:
-                        i[2] -= ((posX + 23) - (self.positionX + self.width))
+                        i[2] -= ((self.kickX + 22) - (self.positionX + self.width))
 
-            elif posX < (self.positionX + (self.width // 2)):
-                if (posX - 23) < self.positionX:
+            elif self.kickX < (self.positionX + (self.width // 2)):
+                if (self.kickX - 10) < self.positionX:
+                    offset = self.positionX - self.kickX
                     for i in self.framesPlatform:
-                        tempClip = self.positionX - (posX - 23)
-                        i[0] += tempClip
-                        i[2] -= tempClip
+                        i[0] += offset
+                        i[2] -= offset
+                    self.kickX -= offset
 
-            elif posX > (self.positionX + (self.width // 2)):
-                self.clip = 0
 
-            self.currPhaseFrame = 0
+            """
+            From the left it bugs out lol
+            """
+
             self.kickStatus = True
+            self.currPhaseFrame = 0
+            return [self.kickX, self.kickY, self.numPlat]
 
     def aniKick(self):
         if not self.recover:
@@ -76,7 +79,6 @@ class Platform:
                 self.recover = False
                 self.kickStatus = False
                 self.currPhaseFrame = -1
-                self.clip = 0
                 return True
 
             elif self.currPhaseFrame != 0:
