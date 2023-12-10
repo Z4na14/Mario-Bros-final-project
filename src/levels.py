@@ -33,12 +33,6 @@ class Platform:
                 case "block":
                     self.framesPlatform = deepcopy(self.aniBlock)
 
-                case "pipeyellow":
-                    self.framesPlatform = deepcopy(self.aniPipeYellow)
-
-                case "pipegreen":
-                    self.framesPlatform = deepcopy(self.aniPipeGreen)
-
                 case "tiles":
                     self.framesPlatform = deepcopy(self.aniTiles)
 

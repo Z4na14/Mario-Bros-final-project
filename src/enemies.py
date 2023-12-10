@@ -37,63 +37,76 @@ class Enemies:
         # Automatic movement to the direction set
         self.posX += self.mX * self.direction
 
-        if self.isDed and self.isFlipped:
-            if self.velY > 0:
-                self.posY -= self.velY
-                self.velY -= 1
+        # Animating the enemies
+        self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
+        self.currframe[2] = self.currframe[2] * self.direction
+        if pyxel.frame_count % 4 == 0:
+            if self.currentPhaseFrame == 2:
+                self.currentPhaseFrame = 0
+            elif self.currentPhaseFrame != 2:
+                self.currentPhaseFrame += 1
 
-            elif self.velY <= 0:
-                if self.velY > 0 - 8:
+    # Check if character leaves screen
+        if self.posX <= 3 or self.posX >= (dimX - 6):
+            if self.posY < 144:
+                self.isFalling = False
+                self.isOver = True
+
+                if self.posX >= (dimX + 20):
+                    self.posX = 0-20
+                elif self.posX <= 0-20:
+                    self.posX = dimX + 20
+
+            elif self.posY > 144:
+                self.posY = 24
+                self.direction *= 0-1
+                self.isSpawning = True
+
+                if self.posX > dimX:
+                    self.posX = 230
+                elif self.posX < 0:
+                    self.posX = 10
+
+        elif 3 < self.posX < (dimX - 9):
+            if self.isDed and self.isFlipped:
+                if self.velY > 0:
+                    self.posY -= self.velY
                     self.velY -= 1
-                self.posY -= self.velY
 
-        if self.isFlipped:
-            # Animating the enemy when fallen
-            self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
-            self.currframe[2] = self.currframe[2] * self.direction
+                elif self.velY <= 0:
+                    if self.velY > 0 - 8:
+                        self.velY -= 1
+                    self.posY -= self.velY
 
-            if pyxel.frame_count % 3 == 0:
-                if self.currentPhaseFrame == 1:
-                    self.currentPhaseFrame = 0
-                elif self.currentPhaseFrame != 1:
-                    self.currentPhaseFrame += 1
+            if self.isFlipped:
+                # Animating the enemy when fallen
+                self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
+                self.currframe[2] = self.currframe[2] * self.direction
 
-        elif not self.isDed:
-            # Check if character leaves screen
-            if self.posX < 0:
-                self.posX = dimX
-                self.posY -= 2
+                if pyxel.frame_count % 4 == 0:
+                    if self.currentPhaseFrame == 1:
+                        self.currentPhaseFrame = 0
+                    elif self.currentPhaseFrame == 0:
+                        self.currentPhaseFrame += 1
 
-            elif self.posX > dimX:
-                self.posX = 0
-                self.posY -= 2
+            elif not self.isDed:
+                if not self.isSpawning:
+                    # Make the gravity
+                    if self.isFalling:
+                        if self.isOver:
+                            self.posY = self.currPlat.positionY - self.collideY
+                            self.isFalling = False
 
-            # Animating the enemies
-            self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
-            self.currframe[2] = self.currframe[2] * self.direction
-            if pyxel.frame_count % 3 == 0:
-                if self.currentPhaseFrame == 2:
-                    self.currentPhaseFrame = 0
-                elif self.currentPhaseFrame != 2:
-                    self.currentPhaseFrame += 1
+                        else:
+                            if self.velY < 8:
+                                self.velY += 1
+                            self.posY += self.velY
 
-            if not self.isSpawning:
-                # Make the gravity
-                if self.isFalling:
-                    if self.isOver:
-                        self.posY = self.currPlat.positionY - self.collideY
-                        self.isFalling = False
-
-                    else:
-                        if self.velY < 8:
-                            self.velY += 1
-                        self.posY += self.velY
-
-                # Check if enemy is still over a platform
-                elif not self.isFalling:
-                    if not self.isOver:
-                        self.isFalling = True
-                        self.velY = 0
+                    # Check if enemy is still over a platform
+                    elif not self.isFalling:
+                        if not self.isOver:
+                            self.isFalling = True
+                            self.velY = 0
 
     def checkIsOver(self, currplatforms):
         for i in currplatforms:
