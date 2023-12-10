@@ -50,7 +50,7 @@ class App:
 
         self.locationTopScore = f"{directory}/{topScore}"
         with open(self.locationTopScore, "r+") as file:
-            self.score, self.topScore = 0, json.load(file)
+            self.score, self.topScore = 0, json.load(file)["topscore"]
 
         # We change the spawn of every enemy inside the pipes
         try:
@@ -159,6 +159,7 @@ class App:
                 pyxel.bltm(0, 0, 1, 0, 0, 240, 200, colkey=8)
 
             pyxel.text(80, 4, str(self.score), 7)
+            pyxel.text(120, 4, str(self.score), 7)
 
             # This was created for the animation of the kick
             for i in self.currplatforms:
@@ -174,10 +175,10 @@ class App:
 
             except AttributeError:
                 if self.currlv == 3:
-                    pyxel.text(94, 50, "YOU WON :)", 9)
+                    pyxel.text(94, 30, "YOU WON :)", 7)
 
                 elif self.mario is None:
-                    pyxel.text(94, 50, "YOU DIED LOL", 9)
+                    pyxel.text(94, 30, "YOU DIED LOL", 7)
 
             """
             for i in self.currplatforms:
@@ -239,9 +240,10 @@ class App:
                     if self.mario.dead(self.parsedtime, self.lifes.count):
                         self.mario = None
 
-                        json_object = json.dumps({"topscore": self.topScore}, indent=4)
-                        with open(self.locationTopScore, "r+") as file:
-                            file.write(json_object)
+                        if self.topScore < self.score:
+                            json_object = json.dumps({"topscore": self.Score}, indent=4)
+                            with open(self.locationTopScore, "r+") as file:
+                                file.write(json_object)
 
                 elif i.isFlipped:
                     i.kickFall("fall", self.parsedtime)
