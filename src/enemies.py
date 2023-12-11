@@ -48,6 +48,7 @@ class Enemies:
 
     # Check if character leaves screen
         if self.posX <= 3 or self.posX >= (dimX - 6):
+            # If the enemy is in the lower part of the screen, we teleport them up to the pipe
             if self.posY < 144:
                 self.isFalling = False
                 self.isOver = True
@@ -67,7 +68,9 @@ class Enemies:
                 elif self.posX < 0:
                     self.posX = 10
 
+        # But if they are not out of the screen, they act normal
         elif 3 < self.posX < (dimX - 9):
+            # Animate the fall
             if self.isDed and self.isFlipped:
                 if self.velY > 0:
                     self.posY -= self.velY
@@ -78,6 +81,7 @@ class Enemies:
                         self.velY -= 1
                     self.posY -= self.velY
 
+            # Animate the flipped animation
             if self.isFlipped:
                 # Animating the enemy when fallen
                 self.currframe = deepcopy(self.currentSetFrames[self.currentPhaseFrame])
@@ -89,6 +93,7 @@ class Enemies:
                     elif self.currentPhaseFrame == 0:
                         self.currentPhaseFrame += 1
 
+            # Moving normally
             elif not self.isDed:
                 if not self.isSpawning:
                     # Make the gravity
@@ -109,6 +114,7 @@ class Enemies:
                             self.velY = 0
 
     def checkIsOver(self, currplatforms):
+        # We check for every platform if the enemy is on top or not
         for i in currplatforms:
             if not self.isDed:
                 if (i.positionY - 8) <= (self.posY + self.collideY) <= i.positionY:
