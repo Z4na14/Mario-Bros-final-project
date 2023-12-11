@@ -225,7 +225,7 @@ class Mario:
                     (self.posX + self.collideX) <= (posXenemy + collideXenemy):
                 return True
 
-    # Function to execute when Mario dies
+    # Function to execute when Mario die
     def dead(self, time, lifes):
         if not self.isDed:
             self.isDed = True

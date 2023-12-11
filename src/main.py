@@ -11,6 +11,7 @@ import levels
 import player
 import enemies
 import scoreboard
+import coins
 
 # External libraries
 import pyxel
@@ -31,6 +32,7 @@ class App:
         :param enemies: Array with the enemies of each lv
         :param directory: Current directory of the program
         :param topScore: Json file with the top score
+        :param coins: Array with the coins used
         """
 
         # Initialize the dimensions of the window
@@ -87,6 +89,7 @@ class App:
 
         # And initialize the first enemy
         self.activenemies = []
+        self.activeCoins, self.paceCoins = [], 1
         self.activenemies.append(self.currenemies.pop())
         self.activenemies[0].isSpawning = True
 
@@ -121,7 +124,6 @@ class App:
                         if self.enemiesCheck(i):
                             # Check if the enemy has been dead for 3 seconds then disappear
                             self.activenemies.pop(a)
-                            self.score += 100
 
                     # Check state of each platform
                     for i in self.currplatforms:
@@ -129,6 +131,18 @@ class App:
                             # if aniKick returns True, there is no more animation
                             if i.aniKick():
                                 self.mario.kickPos = [0, 0, None]
+
+                    for i in self.activeCoins:
+                        i.checkIsOver(self.currplatforms)
+                        i.movement(self.dimX)
+
+                        if self.mario is not None and self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY) \
+                                and not i.isCollected:
+                            self.score += i.value
+
+                            i.currentSetFrames = i.pickedFrames
+                            i.currentPhaseFrame = 0
+                            i.isCollected = True
 
                     # Quit game
                     if pyxel.btnp(pyxel.KEY_Q):
@@ -168,6 +182,14 @@ class App:
                     pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
                               colkey=11)
                 elif i == "Fly":
+                    pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
+                              colkey=0)
+
+            for i in self.activeCoins:
+                if i.isCollected and i.currentPhaseFrame >= 6:
+                    self.activeCoins.remove(i)
+
+                else:
                     pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
                               colkey=0)
 
@@ -233,10 +255,26 @@ class App:
                     self.activenemies[-1].isSpawning = True
                     self.activenemies[-1].timeSpawning = self.temptime
 
+                if float(self.parsedtime) % 10 == 0:
+                    self.activeCoins.append(coins.Coin(100 * self.paceCoins))
+
+                    if self.paceCoins != 5:
+                        self.paceCoins += 1
+
+                    elif self.paceCoins == 5:
+                        self.paceCoins = 1
+
                 # Check for the spawn time from the pipes
                 for a in self.activenemies:
-                    if a.isSpawning and (float(self.temptime) - float(a.timeSpawning)) >= 0.7:
+                    if a.isSpawning and (float(self.temptime) - float(a.timeSpawning)) >= 0.6:
                         a.isSpawning = False
+
+                    if a.timeFlipped and (float(self.temptime) - float(a.timeFlipped)) >= 5.0:
+                        a.currentSetFrames = a.movingFrames
+                        a.currentPhaseFrame = 0
+                        a.isFlipped = False
+                        a.timeFlipped = 0
+                        a.mX = 1
 
     def enemiesCheck(self, i):
         """
@@ -248,50 +286,50 @@ class App:
                 return True
 
         # If the enemy is not dead continue with the check
-        elif not i.isDed:
-            i.checkIsOver(self.currplatforms)
+        i.checkIsOver(self.currplatforms)
 
-            # The fly has a different movement from the rest of enemies
-            if i != "Fly":
-                i.movement(self.dimX)
+        # The fly has a different movement from the rest of enemies
+        if i != "Fly":
+            i.movement(self.dimX)
 
-            elif i == "Fly":
-                # i.movement(self.dimX, self.currplatforms)
-                i.movement(self.dimX)
+        elif i == "Fly":
+            # i.movement(self.dimX, self.currplatforms)
+            i.movement(self.dimX)
 
-            if self.mario is not None and self.mario.kickPos != [0, 0, None]:
-                # Animate the kick and continue with the rest of the check
-                self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos,
-                                                               self.lvType)
+        if self.mario is not None and self.mario.kickPos != [0, 0, None]:
+            # Animate the kick and continue with the rest of the check
+            self.currplatforms[self.mario.kickPos[2]].kick(self.mario.kickPos,
+                                                           self.lvType)
 
-                # Check for the kick position if is under the enemy
-                if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
-                    if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
-                            (self.mario.kickPos[0] + 16):
-                        i.kickFall("turn")
+            # Check for the kick position if is under the enemy
+            if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
+                if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
+                        (self.mario.kickPos[0] + 16):
+                    i.kickFall("turn", self.parsedtime)
 
-            # Check if mario is in the range of an enemy
-            if self.mario is not None and self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
-                if not i.isFlipped and not self.mario.isDed:
-                    self.lifes.count -= 1
+        # Check if mario is in the range of an enemy
+        if self.mario is not None and self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
+            if not i.isFlipped and not self.mario.isDed:
+                self.lifes.count -= 1
 
-                    # Reduce marios lives and check if he still has
-                    if self.mario.dead(self.parsedtime, self.lifes.count):
-                        # If no more lives, he ded
-                        self.mario = None
+                # Reduce marios lives and check if he still has
+                if self.mario.dead(self.parsedtime, self.lifes.count):
+                    # If no more lives, he ded
+                    self.mario = None
 
-                        # And if he's ded input the top score into the file
-                        if self.topScore < self.score:
-                            json_object = json.dumps({"topscore": self.score}, indent=4)
-                            with open(self.locationTopScore, "r+") as file:
-                                file.write(json_object)
+                    # And if he's ded input the top score into the file
+                    if self.topScore < self.score:
+                        json_object = json.dumps({"topscore": self.score}, indent=4)
+                        with open(self.locationTopScore, "r+") as file:
+                            file.write(json_object)
 
-                # But if the enemy is flipped, make him die
-                elif i.isFlipped:
-                    i.kickFall("fall", self.parsedtime)
+            # But if the enemy is flipped, make him die
+            elif i.isFlipped and not i.isDed:
+                i.kickFall("fall", self.parsedtime)
+                self.score += 100
 
-            # If the enemy is still being showed, return False
-            return False
+        # If the enemy is still being showed, return False
+        return False
 
     def changeLv(self):
         self.currlv += 1
@@ -299,6 +337,7 @@ class App:
         # If we are still under the range of the created levels
         if self.currlv != 4:
             self.currenemies = self.enemies[self.currlv]
+            self.activeCoins = []
 
             # And if we change the screen, we also change the texture
             if self.currlv > 1:
@@ -331,7 +370,7 @@ class App:
 
             self.activenemies = [self.currenemies[0]]
             self.activenemies[0].isSpawning = True
-            self.mario.posX, self.mario.posY =  110, 170
+            self.mario.posX, self.mario.posY = 110, 170
 
         # End the game
         elif self.currlv == 4:
@@ -344,7 +383,7 @@ screen1 = levels.Screen(1, [levels.Platform(2, 48, 68, 8),
                             levels.Platform(2, 144, 68, 8),
                             levels.Platform(170, 144, 68, 8),
                             levels.Platform(0, 192, 240, 8)],
-                        [[10, 24], [220, 24], [0, 180], [240, 180]])
+                        [[8, 24], [220, 24], [0, 180], [240, 180]])
 
 screen2 = levels.Screen(2, [levels.Platform(2, 48, 140, 8),
                             levels.Platform(178, 48, 60, 8),
@@ -353,7 +392,7 @@ screen2 = levels.Screen(2, [levels.Platform(2, 48, 140, 8),
                             levels.Platform(2, 144, 60, 8),
                             levels.Platform(98, 144, 140, 8),
                             levels.Platform(0, 192, 240, 8)],
-                        [[10, 24], [220, 24], [0, 180], [240, 180]])
+                        [[8, 24], [220, 24], [0, 180], [240, 180]])
 
 # enemies1 = [enemies.Fly("Fly", 16, 16)]
 enemies1 = [enemies.Turtle("Turtle", 16, 16),
@@ -364,12 +403,12 @@ enemies1 = [enemies.Turtle("Turtle", 16, 16),
             enemies.Crab("Crab", 16, 16)]
 
 # enemies2 = [enemies.Fly("Fly", 16, 16)]
-enemies2 = [enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, )]
+enemies2 = [enemies.Turtle("Turtle", 16, 16),
+            enemies.Turtle("Turtle", 16, 16),
+            enemies.Turtle("Turtle", 16, 16),
+            enemies.Crab("Crab", 16, 16),
+            enemies.Crab("Crab", 16, 16),
+            enemies.Crab("Crab", 16, 16)]
 
 enemies3 = [enemies.Turtle("Turtle", 16, 16),
             enemies.Turtle("Turtle", 16, 16),
@@ -379,12 +418,12 @@ enemies3 = [enemies.Turtle("Turtle", 16, 16),
             enemies.Crab("Crab", 16, 16)]
 
 # enemies2 = [enemies.Fly("Fly", 16, 16)]
-enemies4 = [enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Turtle("Turtle", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, ),
-            enemies.Crab("Crab", 16, 16, )]
+enemies4 = [enemies.Turtle("Turtle", 16, 16),
+            enemies.Turtle("Turtle", 16, 16),
+            enemies.Turtle("Turtle", 16, 16),
+            enemies.Crab("Crab", 16, 16),
+            enemies.Crab("Crab", 16, 16),
+            enemies.Crab("Crab", 16, 16)]
 
 App(240, 200, player.Mario(16, 21), scoreboard.Lifes(10, 2), [screen1, screen2],
     [enemies1, enemies2, enemies3, enemies4], getcwd(), "topScore.json")
