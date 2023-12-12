@@ -157,17 +157,30 @@ class Enemies:
     """
 
     def kickFall(self, state, time=0):
-        if state == "turn":
-            self.isFlipped = True
-            self.timeFlipped = time
-            self.mX = 0
-            self.velY = 6
-
+        if state == "turn" and not self.isFlipped:
             # Set state and animation
-            self.currentSetFrames = self.fallenFrames
+            if self.enemy == "Turtle" and self.status == "angry":
+                self.currentSetFrames = self.fallenFramesAngry
+            elif self.enemy == "Turtle" and self.status == "normal":
+                self.currentSetFrames = self.fallenFramesNormal
+            elif self.enemy == "Crab" and self.status == "normal":
+                self.status = "angry"
+                self.currentSetFrames = self.movingFramesAngry
+                self.mX = 2
+            """
+            else:
+                print("JODERRR")
+                self.isFlipped = True
+                self.timeFlipped = time
+                self.mX = 0
+                self.velY = 6
+                self.currentSetFrames = self.fallenFrames
+            """
+
+            self.velY = 6
             self.currentPhaseFrame = 0
 
-        elif state == "fall":
+        elif state == "fall" and not self.isDed:
             # Create movement
             self.velY = 6
             self.mX = 1
@@ -176,12 +189,27 @@ class Enemies:
             self.isDed = True
             self.timeDed = time
 
+        elif state == "recover" and self.isFlipped:
+            self.isFlipped, self.isDed = False, False
+            self.mX = 2
+            self.velY = 0
+            if self.enemy != "Fly":
+                self.currentSetFrames = self.movingFramesAngry
+                self.status = "angry"
+            elif self.enemy == "Fly":
+                self.currentSetFrames = self.movingFrames
+
 
 class Turtle(Enemies):
     def __init__(self, enemy, collideX, collideY):
         super().__init__(enemy, collideX, collideY)
-        self.currentSetFrames = [[0, 24, -16, 16], [16, 24, -16, 16], [32, 24, -16, 16]]
-        self.fallenFrames = [[96, 24, 16, 16], [112, 24, 16, 16]]
+        self.status = "normal"
+        self.movingFramesNormal = [[0, 24, -16, 16], [16, 24, -16, 16], [32, 24, -16, 16]]
+        self.movingFramesAngry = [[0, 128, -16, 16], [16, 128, -16, 16], [32, 128, -16, 16]]
+        self.fallenFramesNormal = [[96, 24, 16, 16], [112, 24, 16, 16]]
+        self.fallenFramesAngry = [[96, 128, 16, 16], [112, 128, 16, 16]]
+
+        self.currentSetFrames = self.movingFramesNormal
 
 
 class Crab(Enemies):
@@ -197,11 +225,6 @@ class Crab(Enemies):
 
         # TEMPORAL
         self.currframe = self.currentSetFrames[0]
-
-    def changeStatus(self):
-        self.status = "angry"
-        self.currentSetFrames = self.movingFramesAngry
-        self.mX = 2
 
 
 class Fly(Enemies):

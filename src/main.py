@@ -177,7 +177,7 @@ class App:
                 # The different command is because of the transparency color
                 if i == "Turtle":
                     pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
-                              colkey=8)
+                              colkey=6)
                 elif i == "Crab":
                     pyxel.blt(i.posX, i.posY, 0, i.currframe[0], i.currframe[1], i.currframe[2], i.currframe[3],
                               colkey=11)
@@ -264,18 +264,6 @@ class App:
                     elif self.paceCoins == 5:
                         self.paceCoins = 1
 
-                # Check for the spawn time from the pipes
-                for a in self.activenemies:
-                    if a.isSpawning and (float(self.temptime) - float(a.timeSpawning)) >= 0.6:
-                        a.isSpawning = False
-
-                    if a.timeFlipped and (float(self.temptime) - float(a.timeFlipped)) >= 5.0:
-                        a.currentSetFrames = a.movingFrames
-                        a.currentPhaseFrame = 0
-                        a.isFlipped = False
-                        a.timeFlipped = 0
-                        a.mX = 1
-
     def enemiesCheck(self, i):
         """
         :param i: The object of an enemy
@@ -295,6 +283,12 @@ class App:
         elif i == "Fly":
             # i.movement(self.dimX, self.currplatforms)
             i.movement(self.dimX)
+
+        if i.isSpawning and (float(self.temptime) - float(i.timeSpawning)) >= 0.6:
+            i.isSpawning = False
+
+        if i.isFlipped and not i.isDed and (float(self.temptime) - float(i.timeFlipped)) >= 4.0:
+            i.kickFall("recover")
 
         if self.mario is not None and self.mario.kickPos != [0, 0, None]:
             # Animate the kick and continue with the rest of the check
