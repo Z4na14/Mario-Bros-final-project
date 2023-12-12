@@ -24,11 +24,18 @@ class Platform:
         self.framesPlatform = None
 
     def kick(self, kickPos, block: str):
+        """
+        :param kickPos: Array with the position of the kick
+        :param block: The type of block Mario is hitting
+        :return: Return the clipped platform and new position
+        """
         if not self.kickStatus:
+            # If the platform is not already being kicked
             self.kickX = kickPos[0]
             self.kickY = kickPos[1]
             self.numPlat = kickPos[2]
 
+            # Match the type of block and copy it to animate it
             match block:
                 case "block":
                     self.framesPlatform = deepcopy(self.aniBlock)
@@ -36,11 +43,13 @@ class Platform:
                 case "tiles":
                     self.framesPlatform = deepcopy(self.aniTiles)
 
+            # Check from the right
             if self.kickX > (self.positionX + (self.width // 2)):
                 if (self.kickX + 20) > (self.positionX + self.width):
                     for i in self.framesPlatform:
                         i[2] -= ((self.kickX + 22) - (self.positionX + self.width))
 
+            # Check from the left
             elif self.kickX < (self.positionX + (self.width // 2)):
                 if (self.kickX - 10) < self.positionX:
                     offset = self.positionX - self.kickX
@@ -49,16 +58,17 @@ class Platform:
                         i[2] -= offset
                     self.kickX -= offset
 
-
             """
             From the left it bugs out lol
             """
 
+            # Set the status, the frame and return the new position
             self.kickStatus = True
             self.currPhaseFrame = 0
             return [self.kickX, self.kickY, self.numPlat]
 
     def aniKick(self):
+        # Animate the kick
         if not self.recover:
             if self.currPhaseFrame == 2:
                 self.recover = True
