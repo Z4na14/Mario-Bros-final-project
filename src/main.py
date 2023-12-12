@@ -56,37 +56,14 @@ class App:
         # First we initialize the objects that are going to be used inside the level
         self.currlv, self.lvType = 0, "block"
         self.currplatforms = self.screens[self.currlv].platforms
-        self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
+        self.currenemies = self.enemies[self.currlv]
         self.timesKickedPlatforms = 0
 
         # Then set the location of the file with the top score
         self.locationTopScore = f"{directory}/{topScore}"
         with open(self.locationTopScore, "r") as file:
             self.score, self.topScore = 0, json.load(file)["topscore"]
-
-        # We change the spawn of every enemy inside the pipes
-        try:
-            for i, a in enumerate(self.currenemies):
-                # If the index is even, we spawn him in the left
-                if i % 2 == 0:
-                    a.posX = self.currpipes[0][0]
-                    a.direction = 1
-
-                # But if its odd, we put him in the right
-                elif i % 2 != 0:
-                    a.posX = self.currpipes[1][0]
-                    a.direction = 0 - 1
-
-                # And change the height for all of them
-                a.posY = self.currpipes[0][1]
-
-        # If there are not 2 pipes in the level, we put everyone to spawn at the only one
-        # (Not used but if there was, they would spawn correctly)
-        except IndexError:
-            for a in self.currenemies:
-                a.posX = self.currpipes[0][0]
-                a.posY = self.currpipes[0][1]
 
         # And initialize the first enemy
         self.activenemies = []
@@ -96,6 +73,53 @@ class App:
 
         # Finally we run the program
         pyxel.run(self.update, self.draw)
+
+    # We just used setters for the needed variables. For example, we didn't consider
+    # necessary setters for the objects and certain arrays.
+    @property
+    def dimX(self):
+        return self.__dimX
+
+    @dimX.setter
+    def dimX(self, dimX):
+        if dimX > 500:
+            raise ValueError("Dimension X too big")
+        elif dimX < 500:
+            self.__dimX = dimX
+
+    @property
+    def dimY(self):
+        return self.__dimY
+
+    @dimY.setter
+    def dimY(self, dimY):
+        if dimY > 500:
+            raise ValueError("Dimension Y too big")
+        elif dimY < 500:
+            self.__dimY = dimY
+
+    @property
+    def currenemies(self):
+        return self.__currenemies
+
+    @currenemies.setter
+    def currenemies(self, setenemies):
+        self.__currenemies = setenemies
+
+        # We change the spawn of every enemy inside the pipes
+        for i, a in enumerate(self.__currenemies):
+            # If the index is even, we spawn him in the left
+            if i % 2 == 0:
+                a.posX = self.currpipes[0][0]
+                a.direction = 1
+
+            # But if its odd, we put him in the right
+            elif i % 2 != 0:
+                a.posX = self.currpipes[1][0]
+                a.direction = 0 - 1
+
+            # And change the height for all of them
+            a.posY = self.currpipes[0][1]
 
     def update(self):
         try:
@@ -203,7 +227,7 @@ class App:
                 pyxel.bltm(0, 0, 1, 0, 0, 240, 200, colkey=8)
 
             # Scores at the top
-            pyxel.text(60, 4, f"Score: {str(self.score)}" , 7)
+            pyxel.text(60, 4, f"Score: {str(self.score)}", 7)
             pyxel.text(120, 4, f"Top score: {str(self.topScore)}", 7)
 
             # This was created for the animation of the kick
@@ -284,8 +308,7 @@ class App:
             i.movement(self.dimX)
 
         elif i == "Fly":
-            # i.movement(self.dimX, self.currplatforms)
-            i.movement(self.dimX)
+            i.movement(self.dimX, self.currplatforms)
 
         if i.isSpawning and (float(self.temptime) - float(i.timeSpawning)) >= 0.6:
             i.isSpawning = False
@@ -391,13 +414,13 @@ screen2 = levels.Screen(2, [levels.Platform(2, 48, 148, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[8, 24], [220, 24], [0, 180], [240, 180]])
 
-# enemies1 = [enemies.Fly("Fly", 16, 16)]
-enemies1 = [enemies.Turtle("Turtle", 16, 16),
-            enemies.Turtle("Turtle", 16, 16),
-            enemies.Turtle("Turtle", 16, 16),
-            enemies.Crab("Crab", 16, 16),
-            enemies.Crab("Crab", 16, 16),
-            enemies.Crab("Crab", 16, 16)]
+enemies1 = [enemies.Fly("Fly", 16, 16)]
+#enemies1 = [enemies.Turtle("Turtle", 16, 16),
+#            enemies.Turtle("Turtle", 16, 16),
+#            enemies.Turtle("Turtle", 16, 16),
+#            enemies.Crab("Crab", 16, 16),
+#            enemies.Crab("Crab", 16, 16),
+#            enemies.Crab("Crab", 16, 16)]
 
 # enemies2 = [enemies.Fly("Fly", 16, 16)]
 enemies2 = [enemies.Turtle("Turtle", 16, 16),

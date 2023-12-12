@@ -188,6 +188,12 @@ class Enemies:
                 self.mX = 0
                 self.timesKicked += 1
 
+            elif self.enemy == "Fly":
+                self.currentSetFrames = self.fallenFrames
+                self.timeFlipped = time
+                self.isFlipped = True
+                self.mX = 0
+
         elif state == "fall" and not self.isDed:
             # Create movement
             self.velY = 6
@@ -218,6 +224,7 @@ class Turtle(Enemies):
         self.fallenFramesAngry = [[96, 128, 16, 16], [112, 128, 16, 16]]
 
         self.currentSetFrames = self.movingFramesNormal
+        self.value = 100
 
 
 class Crab(Enemies):
@@ -230,52 +237,94 @@ class Crab(Enemies):
         self.fallenFrames = [[152, 40, 16, 16], [168, 40, 16, 16]]
 
         self.currentSetFrames = self.movingFramesNormal
-
-        # TEMPORAL
-        self.currframe = self.currentSetFrames[0]
+        self.value = 200
 
 
 class Fly(Enemies):
     def __init__(self, enemy, collideX, collideY):
         super().__init__(enemy, collideX, collideY)
 
-        self.movingFrames = [[48, 56, 16, 16], [32, 56, 16, 16], [48, 56, 16, 16], [0, 56, 16, 16]]
+        self.movingFrames = [[48, 56, 16, 16], [0, 56, 16, 16]]
         self.fallenFrames = [[64, 56, 16, 16], [80, 56, 16, 16]]
 
         self.currentSetFrames = self.movingFrames
         self.jumping = False
+        self.mX = 2
 
-    """
+        self.value = 300
+
     def movement(self, dimX, platforms):
-        if pyxel.frame_count // 7 and not self.jumping:
+        if pyxel.frame_count % 20 == 0 and not self.jumping:
             self.velY = 8
             self.jumping = True
 
-        if self.jumping:
-            self.posX += self.mX * self.direction
+        if not self.isFlipped:
+            if self.jumping:
+                if not self.checkIsParallel(platforms):
+                    self.posX += self.mX * self.direction
+                self.currframe = self.movingFrames[1]
 
-            # Make the gravity
-            if not self.isFalling:
-                if self.checkIsUnder(platforms):
-                    self.isFalling = True
-                    self.velY = 0
+                if 0 < self.posX < dimX:
+                    # Make the gravity
+                    if not self.isFalling:
+                        if self.checkIsUnder(platforms):
+                            self.isFalling = True
+                            self.velY = 0
 
-                else:
-                    self.posY -= self.velY
-                    self.velY -= 1
+                        else:
+                            self.posY -= self.velY
+                            self.velY -= 1
 
-            elif self.isFalling:
-                if self.isOver:
-                    self.posY = self.currPlat.positionY - self.collideY
+                            if self.velY <= 0:
+                                self.isFalling = True
+                                self.velY = 0
+
+                    elif self.isFalling:
+                        if self.isOver:
+                            self.posY = self.currPlat.positionY - self.collideY
+                            self.isFalling = False
+                            self.jumping = False
+                            self.velY = 0
+
+                        else:
+                            if self.velY < 8:
+                                self.velY += 1
+                            self.posY += self.velY
+
+            elif not self.jumping:
+                self.currframe = self.movingFrames[0]
+
+            if (self.posX <= 3 or self.posX >= (dimX - 6)) and not self.isDed:
+                # If the enemy is in the lower part of the screen, we teleport them up to the pipe
+                if self.posY < 144:
                     self.isFalling = False
-                    self.jumping = False
-                    self.velY = 0
+                    self.isOver = True
 
-                else:
-                    if self.velY < 8:
-                        self.velY += 1
-                    self.posY += self.velY
-    """
+                    if self.posX >= (dimX + 20):
+                        self.posX = 0-20
+                    elif self.posX <= 0-20:
+                        self.posX = dimX + 20
+
+                elif self.posY > 144:
+                    self.posY = 24
+                    self.direction *= 0-1
+                    self.isSpawning = True
+
+                    if self.posX > dimX:
+                        self.posX = 230
+                    elif self.posX < 0:
+                        self.posX = 10
+
+        elif self.isFlipped:
+            self.jumping = False
+            self.currframe = self.currentSetFrames[self.currentPhaseFrame]
+            self.currentPhaseFrame = 0
+
+            if pyxel.frame_count % 4 == 0:
+                if self.currentPhaseFrame == 1:
+                    self.currentPhaseFrame = 0
+                elif self.currentPhaseFrame != 1:
+                    self.currentPhaseFrame += 1
 
     def checkIsUnder(self, currplatform):
         for a, i in enumerate(currplatform):
@@ -287,3 +336,15 @@ class Fly(Enemies):
                         (i.positionX + i.width):
                     self.posY = i.positionY + i.height
                     return True
+
+    def checkIsParallel(self, currplatforms):
+        for i in currplatforms:
+            if self.posY < i.positionY < (self.posY + self.collideY) or \
+                    self.posY < (i.positionY + i.height) < \
+                    (self.posY + self.collideY):
+                if (i.positionX + i.width - 2) <= self.posX <= \
+                        (i.positionX + i.width + 2) or \
+                        (i.positionX + 2) >= (self.posX + self.collideX) >= (i.positionX - 2):
+                    return True
+
+        return False
