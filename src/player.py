@@ -83,8 +83,10 @@ class Mario:
         if self.isDed:
             if float(time) - float(self.timeDed) >= 3:
                 self.isDed = False
+                self.isFalling = False
+                self.velY = 6
                 self.posX = 110
-                self.posY = 170
+                self.posY = 20
 
             else:
 
@@ -220,9 +222,10 @@ class Mario:
 
     # Used to check whether Mario is in the range of the enemy
     def checkEnemy(self, posXenemy, posYenemy, collideXenemy, collideYenemy):
-        if posYenemy <= self.posY + self.collideY <= (posYenemy + collideYenemy):
-            if posXenemy <= self.posX <= (posXenemy + collideXenemy) or posXenemy <= \
-                    (self.posX + self.collideX) <= (posXenemy + collideXenemy):
+        if posYenemy <= self.posY + self.collideY <= (posYenemy + collideYenemy) or \
+                posYenemy <= self.posY <= (posYenemy + collideYenemy):
+            if posXenemy <= self.posX <= (posXenemy + collideXenemy) or \
+                    posXenemy <= (self.posX + self.collideX) <= (posXenemy + collideXenemy):
                 return True
 
     # Function to execute when Mario die

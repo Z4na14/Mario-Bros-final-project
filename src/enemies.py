@@ -15,6 +15,7 @@ class Enemies:
         self.isDed, self.timeDed = False, 0
         self.isSpawning, self.timeSpawning = False, 0
         self.isFlipped, self.timeFlipped = False, 0
+        self.timesKicked = 0
         self.enemy = enemy
 
         # Status checks
@@ -156,29 +157,36 @@ class Enemies:
     TO DO: Finish mario check when hes over the flipped enemies to kill them
     """
 
-    def kickFall(self, state, time=0):
-        if state == "turn" and not self.isFlipped:
+    def kickFall(self, state, kicksMain= 0, time=0):
+        if state == "turn" and not self.isDed:
+            self.currentPhaseFrame = 0
+            self.velY = 6
             # Set state and animation
             if self.enemy == "Turtle" and self.status == "angry":
                 self.currentSetFrames = self.fallenFramesAngry
+                self.isFlipped = True
+                self.timeFlipped = time
+                self.mX = 0
+
             elif self.enemy == "Turtle" and self.status == "normal":
                 self.currentSetFrames = self.fallenFramesNormal
+                self.isFlipped = True
+                self.timeFlipped = time
+                self.mX = 0
+
             elif self.enemy == "Crab" and self.status == "normal":
                 self.status = "angry"
                 self.currentSetFrames = self.movingFramesAngry
                 self.mX = 2
-            """
-            else:
-                print("JODERRR")
+                self.timeFlipped = time
+                self.timesKicked = kicksMain
+
+            elif self.enemy == "Crab" and self.status == "angry" and kicksMain != self.timesKicked:
+                self.currentSetFrames = self.fallenFrames
                 self.isFlipped = True
                 self.timeFlipped = time
                 self.mX = 0
-                self.velY = 6
-                self.currentSetFrames = self.fallenFrames
-            """
-
-            self.velY = 6
-            self.currentPhaseFrame = 0
+                self.timesKicked += 1
 
         elif state == "fall" and not self.isDed:
             # Create movement

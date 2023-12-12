@@ -32,7 +32,7 @@ class Coin:
         if not self.isCollected:
             self.posX += self.mX * self.direction
 
-            # Animating the enemies
+            # Animating the coin
             self.currframe = self.currentSetFrames[self.currentPhaseFrame]
 
             if pyxel.frame_count % 2 == 0:

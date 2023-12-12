@@ -58,6 +58,7 @@ class App:
         self.currplatforms = self.screens[self.currlv].platforms
         self.currenemies = self.enemies[self.currlv]
         self.currpipes = self.screens[self.currlv].pipes
+        self.timesKickedPlatforms = 0
 
         # Then set the location of the file with the top score
         self.locationTopScore = f"{directory}/{topScore}"
@@ -131,6 +132,7 @@ class App:
                             # if aniKick returns True, there is no more animation
                             if i.aniKick():
                                 self.mario.kickPos = [0, 0, None]
+                                self.timesKickedPlatforms += 1
 
                     for i in self.activeCoins:
                         i.checkIsOver(self.currplatforms)
@@ -140,6 +142,7 @@ class App:
                                 and not i.isCollected:
                             self.score += i.value
 
+                            i.posY -= 4
                             i.currentSetFrames = i.pickedFrames
                             i.currentPhaseFrame = 0
                             i.isCollected = True
@@ -200,8 +203,8 @@ class App:
                 pyxel.bltm(0, 0, 1, 0, 0, 240, 200, colkey=8)
 
             # Scores at the top
-            pyxel.text(80, 4, str(self.score), 7)
-            pyxel.text(120, 4, str(self.topScore), 7)
+            pyxel.text(60, 4, f"Score: {str(self.score)}" , 7)
+            pyxel.text(120, 4, f"Top score: {str(self.topScore)}", 7)
 
             # This was created for the animation of the kick
             for i in self.currplatforms:
@@ -218,7 +221,7 @@ class App:
 
             # If there is no mario then check if it's because the game ended or because he died
             except AttributeError:
-                if self.currlv == 3:
+                if self.currlv == 3 and self.currenemies == 0:
                     pyxel.text(94, 30, "YOU WON :)", 7)
 
                 elif self.mario is None:
@@ -250,7 +253,7 @@ class App:
                 self.temptime = self.parsedtime
 
                 # Spawn enemies at a certain rate
-                if float(self.parsedtime) % 4 == 0 and len(self.currenemies) != 0:
+                if float(self.parsedtime) % 2 == 0 and len(self.currenemies) != 0:
                     self.activenemies.append(self.currenemies.pop())
                     self.activenemies[-1].isSpawning = True
                     self.activenemies[-1].timeSpawning = self.temptime
@@ -270,7 +273,7 @@ class App:
         :return: Returns if the enemy is dead and out of computations
         """
         if i.isDed:
-            if (float(self.parsedtime) - float(i.timeDed)) > 3:
+            if (float(self.parsedtime) - float(i.timeDed)) > 3.0:
                 return True
 
         # If the enemy is not dead continue with the check
@@ -299,7 +302,7 @@ class App:
             if (self.mario.kickPos[1] - 13) <= i.posY <= (self.mario.kickPos[1] - 5):
                 if self.mario.kickPos[0] - 5 <= (i.posX + i.collideX // 2) <= \
                         (self.mario.kickPos[0] + 16):
-                    i.kickFall("turn", self.parsedtime)
+                    i.kickFall("turn", self.timesKickedPlatforms, self.parsedtime)
 
         # Check if mario is in the range of an enemy
         if self.mario is not None and self.mario.checkEnemy(i.posX, i.posY, i.collideX, i.collideY):
@@ -379,12 +382,12 @@ screen1 = levels.Screen(1, [levels.Platform(2, 48, 68, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[8, 24], [220, 24], [0, 180], [240, 180]])
 
-screen2 = levels.Screen(2, [levels.Platform(2, 48, 140, 8),
-                            levels.Platform(178, 48, 60, 8),
-                            levels.Platform(2, 96, 100, 8),
-                            levels.Platform(138, 96, 100, 8),
-                            levels.Platform(2, 144, 60, 8),
-                            levels.Platform(98, 144, 140, 8),
+screen2 = levels.Screen(2, [levels.Platform(2, 48, 148, 8),
+                            levels.Platform(202, 48, 36, 8),
+                            levels.Platform(2, 96, 92, 8),
+                            levels.Platform(146, 96, 92, 8),
+                            levels.Platform(2, 144, 36, 8),
+                            levels.Platform(90, 144, 148, 8),
                             levels.Platform(0, 192, 240, 8)],
                         [[8, 24], [220, 24], [0, 180], [240, 180]])
 
