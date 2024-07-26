@@ -1,3 +1,3 @@
 ![cover](resources/cover.webp)
 
-Remake of the original make ported to python
+Remake of the original game ported to python
